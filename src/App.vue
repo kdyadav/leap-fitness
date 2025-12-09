@@ -1,14 +1,13 @@
 <script setup>
 import { onMounted } from 'vue';
 import SplashScreen from './components/SplashScreen.vue';
-import { useStore } from './composables/useStore.js';
+import { useThemeStore } from './stores/index.js';
 
-const store = useStore();
+const themeStore = useThemeStore();
 
 onMounted(() => {
-  // Initialize theme from store
-  const theme = store.getters.theme();
-  document.documentElement.setAttribute('data-theme', theme);
+  // Initialize theme
+  themeStore.initTheme();
 });
 </script>
 

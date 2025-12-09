@@ -34,57 +34,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { IconChevronRight, IconClock } from '@tabler/icons-vue';
+import { workoutService } from '../services/db.js';
 
-const workouts = ref([
-    {
-        id: 1,
-        name: 'Morning Yoga',
-        description: 'Start your day with energizing yoga poses',
-        duration: 20,
-        difficulty: 'Beginner',
-        icon: '🧘'
-    },
-    {
-        id: 2,
-        name: 'HIIT Cardio',
-        description: 'High intensity interval training for fat burning',
-        duration: 30,
-        difficulty: 'Advanced',
-        icon: '🔥'
-    },
-    {
-        id: 3,
-        name: 'Strength Training',
-        description: 'Build muscle with bodyweight exercises',
-        duration: 45,
-        difficulty: 'Intermediate',
-        icon: '💪'
-    },
-    {
-        id: 4,
-        name: 'Core Workout',
-        description: 'Strengthen your core and abs',
-        duration: 15,
-        difficulty: 'Beginner',
-        icon: '⭐'
-    },
-    {
-        id: 5,
-        name: 'Full Body Stretch',
-        description: 'Improve flexibility and recovery',
-        duration: 25,
-        difficulty: 'Beginner',
-        icon: '🌟'
-    },
-    {
-        id: 6,
-        name: 'Running Intervals',
-        description: 'Boost endurance with interval running',
-        duration: 40,
-        difficulty: 'Intermediate',
-        icon: '🏃'
+const workouts = ref([]);
+
+onMounted(async () => {
+    try {
+        workouts.value = await workoutService.getWorkouts();
+    } catch (error) {
+        console.error('Error fetching workouts:', error);
     }
-]);
+});
 </script>

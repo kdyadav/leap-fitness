@@ -122,19 +122,19 @@
 <script setup>
 import { computed } from 'vue';
 import { IconMoon, IconSun } from '@tabler/icons-vue';
-import { useStore } from '../composables/useStore.js';
+import { useThemeStore } from '../stores/index.js';
 
-const store = useStore();
+const themeStore = useThemeStore();
 
-const currentTheme = computed(() => store.getters.theme());
-const isDarkMode = computed(() => store.getters.isDarkMode());
+const currentTheme = computed(() => themeStore.theme);
+const isDarkMode = computed(() => themeStore.isDarkMode);
 
 const toggleTheme = () => {
-    store.dispatch('toggleTheme');
+    themeStore.toggleTheme();
 };
 
 const setTheme = (theme) => {
-    store.dispatch('setTheme', theme);
+    themeStore.setTheme(theme);
 };
 </script>
 
