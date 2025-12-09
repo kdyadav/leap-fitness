@@ -138,11 +138,10 @@
 
             <!-- Next Exercise Info -->
             <div v-if="nextExercise && workoutStarted && !showGetReady"
-                class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-gray-800 bg-opacity-60 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 bg-opacity-60 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
                 <div class="flex items-center gap-2 text-sm">
                     <span class="text-gray-300">Next:</span>
                     <span class="font-semibold text-white">{{ nextExercise.name }}</span>
-                    <span class="text-xl">{{ nextExercise.icon }}</span>
                 </div>
             </div>
         </div>
