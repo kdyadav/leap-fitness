@@ -205,43 +205,10 @@
         </div>
 
         <!-- Completion Modal -->
-        <div v-if="showCompletion"
-            class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50 animate-fade-in">
-            <div class="bg-white text-gray-800 p-12 rounded-3xl text-center max-w-lg w-full">
-                <div class="mb-4 flex justify-center">
-                    <IconConfetti :size="80" stroke-width="1.5" />
-                </div>
-                <h1 class="text-3xl font-bold mb-2">Workout Complete!</h1>
-                <p class="text-gray-600 mb-8">Great job! You've finished {{ workout.name }}</p>
-
-                <div class="flex justify-center gap-8 mb-8 p-8 bg-gray-50 rounded-2xl">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-indigo-600">{{ workout.duration }}</div>
-                        <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Minutes</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-indigo-600">{{ workout.calories }}</div>
-                        <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Calories</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-indigo-600">{{ workout.exercises.length }}</div>
-                        <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Exercises</div>
-                    </div>
-                </div>
-
-                <div class="flex gap-4">
-                    <button @click="goToWorkouts"
-                        class="flex-1 bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-4 px-6 rounded-xl font-bold hover:-translate-y-0.5 transition-transform">
-                        Workouts
-                    </button>
-                    <button @click="restartWorkout"
-                        class="flex-1 bg-gray-100 text-gray-800 py-4 px-6 rounded-xl font-bold hover:-translate-y-0.5 transition-transform">
-                        Restart
-                    </button>
-                </div>
-            </div>
-        </div>
-
+        <WorkoutCompletionModal :show="showCompletion" :workout-name="workout?.name || ''"
+            :duration="workout?.duration || 0" :calories="workout?.calories || 0"
+            :exercise-count="workout?.exercises?.length || 0" @go-to-workouts="goToWorkouts"
+            @restart="restartWorkout" />
 
     </div>
 </template>
@@ -249,8 +216,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconChevronRight, IconCheck, IconConfetti, IconPlayerSkipForward, IconStretching, IconVolume, IconVolumeOff, IconMusic, IconMusicOff, IconSettings } from '@tabler/icons-vue';
+import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconChevronRight, IconCheck, IconPlayerSkipForward, IconStretching, IconVolume, IconVolumeOff, IconMusic, IconMusicOff, IconSettings } from '@tabler/icons-vue';
 import { useWorkoutMusic, musicOptions, coachVoiceOptions } from '../composables/useWorkoutMusic';
+import WorkoutCompletionModal from '../components/workout/WorkoutCompletionModal.vue';
 
 const route = useRoute();
 const router = useRouter();
