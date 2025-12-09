@@ -29,16 +29,30 @@ export function useWorkoutMusic() {
         const selectedMusicTrack = musicOptions.find(m => m.id === selectedMusic.value);
         if (!selectedMusicTrack || !selectedMusicTrack.url) return;
 
+        // Stop any existing music first
+        if (backgroundMusic && !backgroundMusic.paused) {
+            backgroundMusic.pause();
+        }
+
         if (!backgroundMusic) {
             backgroundMusic = new Audio();
-            backgroundMusic.src = selectedMusicTrack.url;
             backgroundMusic.loop = true;
             backgroundMusic.volume = 0.3;
         }
 
-        backgroundMusic.play().catch(err => {
-            console.log('Audio playback failed:', err);
-        });
+        // Update source if different
+        if (backgroundMusic.src !== selectedMusicTrack.url) {
+            backgroundMusic.src = selectedMusicTrack.url;
+            backgroundMusic.load();
+        }
+
+        // Play immediately - the audio will start when ready
+        const playPromise = backgroundMusic.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(err => {
+                console.log('Audio playback failed:', err);
+            });
+        }
     };
 
     const stopBackgroundMusic = () => {
@@ -49,13 +63,13 @@ export function useWorkoutMusic() {
     };
 
     const pauseBackgroundMusic = () => {
-        if (backgroundMusic) {
+        if (backgroundMusic && !backgroundMusic.paused) {
             backgroundMusic.pause();
         }
     };
 
     const resumeBackgroundMusic = () => {
-        if (backgroundMusic && isMusicEnabled.value) {
+        if (backgroundMusic && isMusicEnabled.value && backgroundMusic.paused) {
             backgroundMusic.play().catch(err => {
                 console.log('Audio playback failed:', err);
             });
@@ -64,19 +78,24 @@ export function useWorkoutMusic() {
 
     const toggleMusic = (workoutStarted, isPaused) => {
         isMusicEnabled.value = !isMusicEnabled.value;
-        if (isMusicEnabled.value && workoutStarted && !isPaused) {
-            playBackgroundMusic();
+        if (isMusicEnabled.value) {
+            if (workoutStarted && !isPaused) {
+                playBackgroundMusic();
+            }
         } else {
             stopBackgroundMusic();
         }
     };
 
     const changeMusicTrack = (workoutStarted, isPaused) => {
+        const wasPlaying = backgroundMusic && !backgroundMusic.paused;
+
         if (backgroundMusic) {
             backgroundMusic.pause();
-            backgroundMusic = null;
+            backgroundMusic.currentTime = 0;
         }
-        if (workoutStarted && !isPaused) {
+
+        if (isMusicEnabled.value && workoutStarted && !isPaused && wasPlaying) {
             playBackgroundMusic();
         }
     };

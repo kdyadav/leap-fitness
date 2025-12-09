@@ -16,7 +16,7 @@
                     <IconX :size="24" />
                 </button>
                 <h2 class="text-xl font-medium flex-1 text-center" style="color: var(--text-primary);">{{ workout.name
-                    }}</h2>
+                }}</h2>
                 <div class="flex items-center gap-2">
                     <button @click="showSettings = true"
                         class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
@@ -332,7 +332,9 @@ const startWorkout = () => {
     showGetReady.value = true;
     getReadyTimeRemaining.value = 15;
     startTimer();
-    playBackgroundMusic();
+    if (isMusicEnabled.value) {
+        playBackgroundMusic();
+    }
     speak('Get ready for your workout!');
 };
 
