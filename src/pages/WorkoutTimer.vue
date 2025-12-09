@@ -15,8 +15,26 @@
                     <IconX :size="24" />
                 </button>
                 <h2 class="text-xl font-medium flex-1 text-center">{{ workout.name }}</h2>
-                <div class="bg-gray-100 px-4 py-2 rounded-full text-sm text-gray-600">
-                    <span>{{ currentExerciseIndex + 1 }} / {{ workout.exercises.length }}</span>
+                <div class="flex items-center gap-2">
+                    <button @click="showSettings = true"
+                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-800 transition-colors">
+                        <IconSettings :size="20" />
+                    </button>
+                    <button @click="toggleMusic"
+                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-800 transition-colors"
+                        :class="{ 'bg-indigo-500 text-white': isMusicEnabled }">
+                        <IconMusic v-if="isMusicEnabled" :size="20" />
+                        <IconMusicOff v-else :size="20" />
+                    </button>
+                    <button @click="toggleVoice"
+                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-800 transition-colors"
+                        :class="{ 'bg-indigo-500 text-white': isVoiceEnabled }">
+                        <IconVolume v-if="isVoiceEnabled" :size="20" />
+                        <IconVolumeOff v-else :size="20" />
+                    </button>
+                    <div class="bg-gray-100 px-4 py-2 rounded-full text-sm text-gray-600">
+                        <span>{{ currentExerciseIndex + 1 }} / {{ workout.exercises.length }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -28,8 +46,13 @@
                         <IconStretching :size="80" stroke-width="1.5" />
                     </div>
                     <h2 class="text-3xl font-bold mb-4">Get Ready!</h2>
-                    <div class="text-8xl font-bold mb-4">{{ getReadyTimeRemaining }}</div>
-                    <p class="text-xl">Next: {{ currentExercise.name }}</p>
+                    <div class="text-8xl font-bold mb-8">{{ getReadyTimeRemaining }}</div>
+                    <p class="text-xl mb-6">Next: {{ currentExercise.name }}</p>
+                    <button @click="skipGetReady"
+                        class="bg-white text-black px-8 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors flex items-center gap-2 mx-auto">
+                        Skip
+                        <IconPlayerSkipForward :size="20" />
+                    </button>
                 </div>
             </div>
 
@@ -115,12 +138,69 @@
 
             <!-- Next Exercise Info -->
             <div v-if="nextExercise && workoutStarted && !showGetReady"
-                class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-lg border border-gray-200">
+                class="fixed bottom-3 left-1/2 -translate-x-1/2 bg-gray-800 bg-opacity-60 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
                 <div class="flex items-center gap-2 text-sm">
-                    <span class="text-gray-500">Next:</span>
-                    <span class="font-semibold text-gray-800">{{ nextExercise.name }}</span>
+                    <span class="text-gray-300">Next:</span>
+                    <span class="font-semibold text-white">{{ nextExercise.name }}</span>
                     <span class="text-xl">{{ nextExercise.icon }}</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div v-if="showSettings"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in"
+            @click.self="showSettings = false">
+            <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md w-full">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">Settings</h2>
+                    <button @click="showSettings = false"
+                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center">
+                        <IconX :size="20" />
+                    </button>
+                </div>
+
+                <!-- Music Selection -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <IconMusic :size="20" />
+                        Background Music
+                    </h3>
+                    <div class="space-y-2">
+                        <label v-for="music in musicOptions" :key="music.id"
+                            class="flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all"
+                            :class="selectedMusic === music.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'">
+                            <input type="radio" :value="music.id" v-model="selectedMusic" @change="changeMusicTrack"
+                                class="w-4 h-4 text-indigo-600" />
+                            <span class="ml-3 text-sm font-medium">{{ music.name }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Coach Voice Selection -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <IconVolume :size="20" />
+                        Coach Voice
+                    </h3>
+                    <div class="space-y-2">
+                        <label v-for="voice in coachVoiceOptions" :key="voice.id"
+                            class="flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all"
+                            :class="selectedVoice === voice.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-gray-300'">
+                            <input type="radio" :value="voice.id" v-model="selectedVoice" @change="testVoice(voice)"
+                                class="w-4 h-4 text-indigo-600" />
+                            <div class="ml-3">
+                                <div class="text-sm font-medium">{{ voice.name }}</div>
+                                <div class="text-xs text-gray-500">{{ voice.description }}</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button @click="showSettings = false"
+                    class="w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-bold hover:-translate-y-0.5 transition-transform">
+                    Done
+                </button>
             </div>
         </div>
 
@@ -169,7 +249,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconChevronRight, IconCheck, IconConfetti, IconPlayerSkipForward, IconStretching } from '@tabler/icons-vue';
+import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconChevronRight, IconCheck, IconConfetti, IconPlayerSkipForward, IconStretching, IconVolume, IconVolumeOff, IconMusic, IconMusicOff, IconSettings } from '@tabler/icons-vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -185,8 +265,32 @@ const timeRemaining = ref(0);
 const restTimeRemaining = ref(0);
 const getReadyTimeRemaining = ref(15);
 const showCompletion = ref(false);
+const isMusicEnabled = ref(true);
+const isVoiceEnabled = ref(true);
+const showSettings = ref(false);
+const selectedMusic = ref('energetic');
+const selectedVoice = ref('default');
 
 let timerInterval = null;
+let backgroundMusic = null;
+let speechSynthesis = null;
+
+// Music options
+const musicOptions = [
+    { id: 'energetic', name: '🔥 Energetic Beats', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+    { id: 'motivational', name: '💪 Motivational Rock', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+    { id: 'chill', name: '🧘 Chill Vibes', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+    { id: 'electronic', name: '⚡ Electronic Dance', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
+    { id: 'none', name: '🔇 No Music', url: '' }
+];
+
+// Coach voice options
+const coachVoiceOptions = [
+    { id: 'default', name: 'Default', description: 'Standard voice', rate: 1.0, pitch: 1.0 },
+    { id: 'energetic', name: 'Energetic Coach', description: 'Fast & upbeat', rate: 1.2, pitch: 1.1 },
+    { id: 'calm', name: 'Calm Guide', description: 'Slow & soothing', rate: 0.9, pitch: 0.95 },
+    { id: 'motivator', name: 'Motivator', description: 'Deep & powerful', rate: 1.0, pitch: 0.85 }
+];
 
 // Sample workout data (same as WorkoutDetails)
 const workoutsData = {
@@ -345,6 +449,8 @@ const startWorkout = () => {
     showGetReady.value = true;
     getReadyTimeRemaining.value = 15;
     startTimer();
+    playBackgroundMusic();
+    speak('Get ready for your workout!');
 };
 
 const startTimer = () => {
@@ -360,6 +466,9 @@ const startTimer = () => {
                 if (timerMode.value === 'countdown') {
                     timeRemaining.value = currentExercise.value.duration;
                 }
+                speak(`Start ${currentExercise.value.name}`);
+            } else if (getReadyTimeRemaining.value <= 3) {
+                speak(getReadyTimeRemaining.value.toString());
             }
         } else if (isResting.value) {
             restTimeRemaining.value--;
@@ -368,9 +477,15 @@ const startTimer = () => {
                 if (timerMode.value === 'countdown') {
                     timeRemaining.value = currentExercise.value.duration;
                 }
+                speak(`Start ${currentExercise.value.name}`);
+            } else if (restTimeRemaining.value <= 3) {
+                speak(restTimeRemaining.value.toString());
             }
         } else if (timerMode.value === 'countdown') {
             timeRemaining.value--;
+            if (timeRemaining.value <= 5 && timeRemaining.value > 0) {
+                speak(timeRemaining.value.toString());
+            }
             if (timeRemaining.value <= 0) {
                 handleExerciseComplete();
             }
@@ -398,6 +513,7 @@ const handleExerciseComplete = () => {
 const startRest = () => {
     isResting.value = true;
     restTimeRemaining.value = 10; // 10 seconds rest
+    speak('Rest time');
 };
 
 const goToNextExercise = () => {
@@ -428,6 +544,17 @@ const previousExercise = () => {
 
 const togglePause = () => {
     isPaused.value = !isPaused.value;
+    if (isPaused.value) {
+        if (backgroundMusic) {
+            backgroundMusic.pause();
+        }
+    } else {
+        if (backgroundMusic && isMusicEnabled.value) {
+            backgroundMusic.play().catch(err => {
+                console.log('Audio playback failed:', err);
+            });
+        }
+    }
 };
 
 const skipRest = () => {
@@ -437,9 +564,20 @@ const skipRest = () => {
     }
 };
 
+const skipGetReady = () => {
+    showGetReady.value = false;
+    getReadyTimeRemaining.value = 0;
+    if (timerMode.value === 'countdown') {
+        timeRemaining.value = currentExercise.value.duration;
+    }
+    speak(`Start ${currentExercise.value.name}`);
+};
+
 const completeWorkout = () => {
     if (timerInterval) clearInterval(timerInterval);
     showCompletion.value = true;
+    stopBackgroundMusic();
+    speak('Workout complete! Great job!');
 };
 
 const restartWorkout = () => {
@@ -461,11 +599,84 @@ const goToWorkouts = () => {
 
 const handleExit = () => {
     if (confirm('Are you sure you want to exit? Your progress will be lost.')) {
+        stopBackgroundMusic();
         router.back();
     }
 };
 
-onMounted(() => {
+const toggleMusic = () => {
+    isMusicEnabled.value = !isMusicEnabled.value;
+    if (isMusicEnabled.value && workoutStarted.value) {
+        playBackgroundMusic();
+    } else {
+        stopBackgroundMusic();
+    }
+};
+
+const toggleVoice = () => {
+    isVoiceEnabled.value = !isVoiceEnabled.value;
+    if (!isVoiceEnabled.value && speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+};
+
+const playBackgroundMusic = () => {
+    if (!isMusicEnabled.value) return;
+
+    const selectedMusicTrack = musicOptions.find(m => m.id === selectedMusic.value);
+    if (!selectedMusicTrack || !selectedMusicTrack.url) return;
+
+    if (!backgroundMusic) {
+        backgroundMusic = new Audio();
+        backgroundMusic.src = selectedMusicTrack.url;
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.3;
+    }
+
+    backgroundMusic.play().catch(err => {
+        console.log('Audio playback failed:', err);
+    });
+}; const stopBackgroundMusic = () => {
+    if (backgroundMusic) {
+        backgroundMusic.pause();
+        backgroundMusic.currentTime = 0;
+    }
+};
+
+const speak = (text) => {
+    if (!isVoiceEnabled.value) return;
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const selectedVoiceConfig = coachVoiceOptions.find(v => v.id === selectedVoice.value);
+        if (selectedVoiceConfig) {
+            utterance.rate = selectedVoiceConfig.rate;
+            utterance.pitch = selectedVoiceConfig.pitch;
+        }
+        utterance.volume = 1.0;
+        window.speechSynthesis.speak(utterance);
+    }
+};
+
+const changeMusicTrack = () => {
+    if (backgroundMusic) {
+        backgroundMusic.pause();
+        backgroundMusic = null;
+    }
+    if (workoutStarted.value && !isPaused.value) {
+        playBackgroundMusic();
+    }
+};
+
+const testVoice = (voice) => {
+    const utterance = new SpeechSynthesisUtterance('Let\'s get started!');
+    utterance.rate = voice.rate;
+    utterance.pitch = voice.pitch;
+    utterance.volume = 1.0;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+}; onMounted(() => {
     const workoutId = route.params.id;
     workout.value = workoutsData[workoutId] || null;
 
@@ -476,6 +687,10 @@ onMounted(() => {
 
 onUnmounted(() => {
     if (timerInterval) clearInterval(timerInterval);
+    stopBackgroundMusic();
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
 });
 
 watch(workoutStarted, (started) => {
