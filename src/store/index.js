@@ -1,6 +1,6 @@
 // Vuex Store - State management for the application
 import { reactive, computed } from 'vue';
-import { userService, preferencesService, programService, workoutService, exerciseService, userWorkoutService, progressService, goalService, favoriteService } from '@/services/database';
+import { userService, preferencesService, programService, workoutService, exerciseService, userWorkoutService, progressService, goalService, favoriteService } from '../services/database.js';
 
 // Global state
 const state = reactive({
@@ -47,6 +47,9 @@ const state = reactive({
 
     // UI
     notifications: [],
+
+    // Theme
+    theme: localStorage.getItem('theme') || 'light',
 });
 
 // Getters
@@ -66,6 +69,9 @@ const getters = {
     completedGoals: () => state.userGoals.filter(g => g.status === 'completed'),
 
     isFavorited: () => (workoutId) => state.favorites.some(f => f.workout_id === workoutId),
+
+    theme: () => state.theme,
+    isDarkMode: () => state.theme === 'dark',
 };
 
 // Mutations
@@ -229,6 +235,13 @@ const mutations = {
     },
     REMOVE_NOTIFICATION(notificationId) {
         state.notifications = state.notifications.filter(n => n.id !== notificationId);
+    },
+
+    // Theme mutations
+    SET_THEME(theme) {
+        state.theme = theme;
+        localStorage.setItem('theme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
     },
 };
 
@@ -562,6 +575,16 @@ const actions = {
 
     clearNotifications({ commit }) {
         state.notifications = [];
+    },
+
+    // Theme actions
+    toggleTheme({ commit }) {
+        const newTheme = state.theme === 'light' ? 'dark' : 'light';
+        commit('SET_THEME', newTheme);
+    },
+
+    setTheme({ commit }, theme) {
+        commit('SET_THEME', theme);
     },
 };
 

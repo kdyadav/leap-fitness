@@ -1,5 +1,5 @@
 // Composable for using the store in Vue components
-import { useStore as baseUseStore } from '@/store/index';
+import { useStore as baseUseStore } from '../store/index.js';
 
 let storeInstance = null;
 

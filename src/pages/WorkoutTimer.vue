@@ -1,8 +1,8 @@
 <template>
-    <div class="min-h-screen bg-white text-gray-800 p-4">
+    <div class="min-h-screen p-4" style="background-color: var(--bg-primary); color: var(--text-primary);">
         <div v-if="workout" class="max-w-2xl mx-auto">
             <!-- Progress Bar -->
-            <div class="bg-gray-100 h-2 rounded-full overflow-hidden mb-8">
+            <div class="h-2 rounded-full overflow-hidden mb-8" style="background-color: var(--bg-tertiary);">
                 <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"
                     :style="{ width: progressPercentage + '%' }">
                 </div>
@@ -11,28 +11,32 @@
             <!-- Header -->
             <div class="flex items-center justify-between mb-4">
                 <button @click="handleExit"
-                    class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-800 transition-colors">
+                    class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                    style="background-color: var(--bg-tertiary); color: var(--text-primary);">
                     <IconX :size="24" />
                 </button>
-                <h2 class="text-xl font-medium flex-1 text-center">{{ workout.name }}</h2>
+                <h2 class="text-xl font-medium flex-1 text-center" style="color: var(--text-primary);">{{ workout.name
+                    }}</h2>
                 <div class="flex items-center gap-2">
                     <button @click="showSettings = true"
-                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-800 transition-colors">
+                        class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                        style="background-color: var(--bg-tertiary); color: var(--text-primary);">
                         <IconSettings :size="20" />
                     </button>
                     <button @click="toggleMusic"
-                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-800 transition-colors"
-                        :class="{ 'bg-indigo-500 text-white': isMusicEnabled }">
+                        class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                        :style="{ backgroundColor: isMusicEnabled ? 'var(--accent-color)' : 'var(--bg-tertiary)', color: isMusicEnabled ? 'white' : 'var(--text-primary)' }">
                         <IconMusic v-if="isMusicEnabled" :size="20" />
                         <IconMusicOff v-else :size="20" />
                     </button>
                     <button @click="toggleVoice"
-                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-800 transition-colors"
-                        :class="{ 'bg-indigo-500 text-white': isVoiceEnabled }">
+                        class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                        :style="{ backgroundColor: isVoiceEnabled ? 'var(--accent-color)' : 'var(--bg-tertiary)', color: isVoiceEnabled ? 'white' : 'var(--text-primary)' }">
                         <IconVolume v-if="isVoiceEnabled" :size="20" />
                         <IconVolumeOff v-else :size="20" />
                     </button>
-                    <div class="bg-gray-100 px-4 py-2 rounded-full text-sm text-gray-600">
+                    <div class="px-4 py-2 rounded-full text-sm"
+                        style="background-color: var(--bg-tertiary); color: var(--text-secondary);">
                         <span>{{ currentExerciseIndex + 1 }} / {{ workout.exercises.length }}</span>
                     </div>
                 </div>
@@ -74,7 +78,8 @@
             </div>
 
             <!-- Exercise Video/Icon Section (Top) -->
-            <div class="bg-white text-center mb-6 flex items-center justify-center min-h-[300px]">
+            <div class="text-center mb-6 flex items-center justify-center min-h-[300px]"
+                style="background-color: var(--card-bg);">
                 <div v-if="currentExercise.videoUrl" class="w-full max-w-2xl aspect-video">
                     <iframe :src="getEmbedUrl(currentExercise.videoUrl)" class="w-full h-full rounded-lg"
                         frameborder="0"
@@ -86,8 +91,8 @@
 
             <!-- Exercise Title -->
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold mb-2 text-gray-800">{{ currentExercise.name }}</h1>
-                <div v-if="currentExercise.sets > 1" class="text-base text-gray-400 mt-1">
+                <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">{{ currentExercise.name }}</h1>
+                <div v-if="currentExercise.sets > 1" class="text-base mt-1" style="color: var(--text-tertiary);">
                     Set {{ currentSet }} of {{ currentExercise.sets }}
                 </div>
             </div>
@@ -96,14 +101,18 @@
             <div class="text-center mb-12 py-8">
                 <!-- Timer Display -->
                 <div v-if="timerMode === 'countdown'" class="flex flex-col items-center">
-                    <div class="text-8xl font-bold leading-none text-gray-800">{{ formatTime(timeRemaining) }}</div>
-                    <div class="text-sm text-gray-400 mt-2 uppercase tracking-wider">seconds remaining</div>
+                    <div class="text-8xl font-bold leading-none" style="color: var(--text-primary);">{{
+                        formatTime(timeRemaining) }}</div>
+                    <div class="text-sm mt-2 uppercase tracking-wider" style="color: var(--text-tertiary);">seconds
+                        remaining</div>
                 </div>
 
                 <!-- Reps Display -->
                 <div v-else class="flex flex-col items-center">
-                    <div class="text-8xl font-bold leading-none text-gray-800">{{ currentExercise.reps }}</div>
-                    <div class="text-sm text-gray-400 mt-2 uppercase tracking-wider">repetitions</div>
+                    <div class="text-8xl font-bold leading-none" style="color: var(--text-primary);">{{
+                        currentExercise.reps }}</div>
+                    <div class="text-sm mt-2 uppercase tracking-wider" style="color: var(--text-tertiary);">repetitions
+                    </div>
                 </div>
             </div>
 
@@ -118,18 +127,21 @@
 
                 <template v-else>
                     <button v-if="currentExerciseIndex > 0" @click="previousExercise"
-                        class="w-16 h-16 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0">
+                        class="w-16 h-16 rounded-full flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0"
+                        style="background-color: var(--bg-tertiary); color: var(--text-primary);">
                         <IconChevronLeft :size="28" />
                     </button>
 
                     <button v-if="!isResting" @click="togglePause"
-                        class="w-16 h-16 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0">
+                        class="w-16 h-16 rounded-full flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0"
+                        style="background-color: var(--bg-tertiary); color: var(--text-primary);">
                         <IconPlayerPlay v-if="isPaused" :size="28" />
                         <IconPlayerPause v-else :size="28" />
                     </button>
 
                     <button @click="goToNextExercise"
-                        class="w-16 h-16 bg-gray-100 text-gray-800 rounded-full flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0">
+                        class="w-16 h-16 rounded-full flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md transition-all active:translate-y-0"
+                        style="background-color: var(--bg-tertiary); color: var(--text-primary);">
                         <IconCheck v-if="isLastExercise" :size="28" />
                         <IconChevronRight v-else :size="28" />
                     </button>
@@ -150,11 +162,13 @@
         <div v-if="showSettings"
             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in"
             @click.self="showSettings = false">
-            <div class="bg-white text-gray-800 p-8 rounded-3xl max-w-md w-full">
+            <div class="p-8 rounded-3xl max-w-md w-full"
+                style="background-color: var(--card-bg); color: var(--text-primary);">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold">Settings</h2>
+                    <h2 class="text-2xl font-bold" style="color: var(--text-primary);">Settings</h2>
                     <button @click="showSettings = false"
-                        class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center">
+                        class="w-10 h-10 rounded-full flex items-center justify-center"
+                        style="background-color: var(--bg-tertiary); color: var(--text-primary);">
                         <IconX :size="20" />
                     </button>
                 </div>
@@ -282,8 +296,9 @@ const timerMode = computed(() => {
 });
 
 const isLastExercise = computed(() => {
+    if (!workout.value) return false;
     return currentExerciseIndex.value === workout.value.exercises.length - 1 &&
-        currentSet.value === currentExercise.value.sets;
+        currentSet.value >= currentExercise.value.sets;
 });
 
 const progressPercentage = computed(() => {
@@ -385,16 +400,24 @@ const startRest = () => {
 };
 
 const goToNextExercise = () => {
-    if (isLastExercise.value) {
-        completeWorkout();
-    } else {
-        currentExerciseIndex.value++;
-        currentSet.value = 1;
+    // Check if there are more sets for current exercise
+    if (currentSet.value < currentExercise.value.sets) {
+        currentSet.value++;
         isResting.value = false;
-
         if (timerMode.value === 'countdown') {
             timeRemaining.value = currentExercise.value.duration;
         }
+    } else if (currentExerciseIndex.value < workout.value.exercises.length - 1) {
+        // Move to next exercise
+        currentExerciseIndex.value++;
+        currentSet.value = 1;
+        isResting.value = false;
+        if (timerMode.value === 'countdown') {
+            timeRemaining.value = currentExercise.value.duration;
+        }
+    } else {
+        // Last exercise, last set - complete workout
+        completeWorkout();
     }
 };
 

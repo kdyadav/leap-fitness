@@ -1,38 +1,35 @@
 <template>
-    <nav class="bottom-0 left-0 right-0 bg-white border-t border-gray-300">
+    <nav class="bottom-0 left-0 right-0"
+        style="background-color: var(--card-bg); border-top: 1px solid var(--border-color);">
         <div class="flex justify-around items-center h-15">
             <!-- Workouts -->
-            <router-link :to="{ name: 'workouts' }" :class="[
-                'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
-                route.name === 'workouts' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
-            ]">
+            <router-link :to="{ name: 'workouts' }"
+                class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300"
+                :style="{ color: route.name === 'workouts' ? 'var(--accent-color)' : 'var(--text-tertiary)' }">
                 <IconBarbellOff />
                 <span class="text-xs font-medium">Workouts</span>
             </router-link>
 
             <!-- Classic -->
-            <router-link :to="{ name: 'classic' }" :class="[
-                'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
-                route.name === 'classic' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
-            ]">
+            <router-link :to="{ name: 'classic' }"
+                class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300"
+                :style="{ color: route.name === 'classic' ? 'var(--accent-color)' : 'var(--text-tertiary)' }">
                 <IconStar />
                 <span class="text-xs font-medium">Classic</span>
             </router-link>
 
             <!-- Preferences -->
-            <router-link :to="{ name: 'preferences' }" :class="[
-                'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
-                route.name === 'preferences' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
-            ]">
+            <router-link :to="{ name: 'preferences' }"
+                class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300"
+                :style="{ color: route.name === 'preferences' ? 'var(--accent-color)' : 'var(--text-tertiary)' }">
                 <IconSettings />
                 <span class="text-xs font-medium">Preferences</span>
             </router-link>
 
             <!-- Me/Profile -->
-            <router-link :to="{ name: 'profile' }" :class="[
-                'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
-                route.name === 'profile' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
-            ]">
+            <router-link :to="{ name: 'profile' }"
+                class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300"
+                :style="{ color: route.name === 'profile' ? 'var(--accent-color)' : 'var(--text-tertiary)' }">
                 <IconUser />
                 <span class="text-xs font-medium">Me</span>
             </router-link>
