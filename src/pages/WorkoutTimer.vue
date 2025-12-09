@@ -110,7 +110,7 @@
 
 
             <!-- Control Buttons (Bottom) -->
-            <div class="fixed bottom-24 left-1/2 -translate-x-1/2 flex justify-center gap-4 z-10">
+            <div class="fixed bottom-24 left-1/2 -translate-x-1/2 flex justify-center gap-4 z-1">
                 <button v-if="!workoutStarted" @click="startWorkout"
                     class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center hover:-translate-y-0.5 hover:shadow-lg transition-all active:translate-y-0">
                     <IconPlayerPlay :size="32" fill="white" />
@@ -250,9 +250,28 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconChevronRight, IconCheck, IconConfetti, IconPlayerSkipForward, IconStretching, IconVolume, IconVolumeOff, IconMusic, IconMusicOff, IconSettings } from '@tabler/icons-vue';
+import { useWorkoutMusic, musicOptions, coachVoiceOptions } from '../composables/useWorkoutMusic';
 
 const route = useRoute();
 const router = useRouter();
+
+// Music and voice composable
+const {
+    isMusicEnabled,
+    isVoiceEnabled,
+    selectedMusic,
+    selectedVoice,
+    playBackgroundMusic,
+    stopBackgroundMusic,
+    pauseBackgroundMusic,
+    resumeBackgroundMusic,
+    toggleMusic: toggleMusicComposable,
+    toggleVoice: toggleVoiceComposable,
+    changeMusicTrack: changeMusicTrackComposable,
+    speak,
+    testVoice,
+    cleanup
+} = useWorkoutMusic();
 
 const workout = ref(null);
 const currentExerciseIndex = ref(0);
@@ -265,32 +284,9 @@ const timeRemaining = ref(0);
 const restTimeRemaining = ref(0);
 const getReadyTimeRemaining = ref(15);
 const showCompletion = ref(false);
-const isMusicEnabled = ref(true);
-const isVoiceEnabled = ref(true);
 const showSettings = ref(false);
-const selectedMusic = ref('energetic');
-const selectedVoice = ref('default');
 
 let timerInterval = null;
-let backgroundMusic = null;
-let speechSynthesis = null;
-
-// Music options
-const musicOptions = [
-    { id: 'energetic', name: '🔥 Energetic Beats', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-    { id: 'motivational', name: '💪 Motivational Rock', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
-    { id: 'chill', name: '🧘 Chill Vibes', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
-    { id: 'electronic', name: '⚡ Electronic Dance', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
-    { id: 'none', name: '🔇 No Music', url: '' }
-];
-
-// Coach voice options
-const coachVoiceOptions = [
-    { id: 'default', name: 'Default', description: 'Standard voice', rate: 1.0, pitch: 1.0 },
-    { id: 'energetic', name: 'Energetic Coach', description: 'Fast & upbeat', rate: 1.2, pitch: 1.1 },
-    { id: 'calm', name: 'Calm Guide', description: 'Slow & soothing', rate: 0.9, pitch: 0.95 },
-    { id: 'motivator', name: 'Motivator', description: 'Deep & powerful', rate: 1.0, pitch: 0.85 }
-];
 
 // Sample workout data (same as WorkoutDetails)
 const workoutsData = {
@@ -545,15 +541,9 @@ const previousExercise = () => {
 const togglePause = () => {
     isPaused.value = !isPaused.value;
     if (isPaused.value) {
-        if (backgroundMusic) {
-            backgroundMusic.pause();
-        }
+        pauseBackgroundMusic();
     } else {
-        if (backgroundMusic && isMusicEnabled.value) {
-            backgroundMusic.play().catch(err => {
-                console.log('Audio playback failed:', err);
-            });
-        }
+        resumeBackgroundMusic();
     }
 };
 
@@ -605,78 +595,18 @@ const handleExit = () => {
 };
 
 const toggleMusic = () => {
-    isMusicEnabled.value = !isMusicEnabled.value;
-    if (isMusicEnabled.value && workoutStarted.value) {
-        playBackgroundMusic();
-    } else {
-        stopBackgroundMusic();
-    }
+    toggleMusicComposable(workoutStarted.value, isPaused.value);
 };
 
 const toggleVoice = () => {
-    isVoiceEnabled.value = !isVoiceEnabled.value;
-    if (!isVoiceEnabled.value && speechSynthesis) {
-        window.speechSynthesis.cancel();
-    }
-};
-
-const playBackgroundMusic = () => {
-    if (!isMusicEnabled.value) return;
-
-    const selectedMusicTrack = musicOptions.find(m => m.id === selectedMusic.value);
-    if (!selectedMusicTrack || !selectedMusicTrack.url) return;
-
-    if (!backgroundMusic) {
-        backgroundMusic = new Audio();
-        backgroundMusic.src = selectedMusicTrack.url;
-        backgroundMusic.loop = true;
-        backgroundMusic.volume = 0.3;
-    }
-
-    backgroundMusic.play().catch(err => {
-        console.log('Audio playback failed:', err);
-    });
-}; const stopBackgroundMusic = () => {
-    if (backgroundMusic) {
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0;
-    }
-};
-
-const speak = (text) => {
-    if (!isVoiceEnabled.value) return;
-
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        const selectedVoiceConfig = coachVoiceOptions.find(v => v.id === selectedVoice.value);
-        if (selectedVoiceConfig) {
-            utterance.rate = selectedVoiceConfig.rate;
-            utterance.pitch = selectedVoiceConfig.pitch;
-        }
-        utterance.volume = 1.0;
-        window.speechSynthesis.speak(utterance);
-    }
+    toggleVoiceComposable();
 };
 
 const changeMusicTrack = () => {
-    if (backgroundMusic) {
-        backgroundMusic.pause();
-        backgroundMusic = null;
-    }
-    if (workoutStarted.value && !isPaused.value) {
-        playBackgroundMusic();
-    }
+    changeMusicTrackComposable(workoutStarted.value, isPaused.value);
 };
 
-const testVoice = (voice) => {
-    const utterance = new SpeechSynthesisUtterance('Let\'s get started!');
-    utterance.rate = voice.rate;
-    utterance.pitch = voice.pitch;
-    utterance.volume = 1.0;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-}; onMounted(() => {
+onMounted(() => {
     const workoutId = route.params.id;
     workout.value = workoutsData[workoutId] || null;
 
@@ -687,10 +617,7 @@ const testVoice = (voice) => {
 
 onUnmounted(() => {
     if (timerInterval) clearInterval(timerInterval);
-    stopBackgroundMusic();
-    if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-    }
+    cleanup();
 });
 
 watch(workoutStarted, (started) => {

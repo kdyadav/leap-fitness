@@ -1,5 +1,5 @@
 <template>
-    <div v-if="showSplash" class="absolute flex bg-[#0054ff] justify-center items-center h-screen w-screen">
+    <div v-if="showSplash" class="absolute flex bg-[#0054ff] justify-center items-center h-screen w-screen z-100">
         <div class="splash-content text-center text-white">
             <h1 class="text-5xl text-center font-bold">HOME</h1>
             <p class="text-lg tracking-[.5rem]">WORKOUT</p>
