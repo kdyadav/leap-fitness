@@ -1,12 +1,12 @@
 <template>
-    <nav class="bottom-0 left-0 right-0 bg-black border-t border-gray-600">
+    <nav class="bottom-0 left-0 right-0 bg-white border-t border-gray-300">
         <div class="flex justify-around items-center h-15">
             <!-- Workouts -->
             <router-link :to="{ name: 'workouts' }" :class="[
                 'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
                 route.name === 'workouts' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
             ]">
-                <span class="text-xl">🏋️</span>
+                <IconBarbellOff />
                 <span class="text-xs font-medium">Workouts</span>
             </router-link>
 
@@ -15,7 +15,7 @@
                 'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
                 route.name === 'classic' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
             ]">
-                <span class="text-xl">⭐</span>
+                <IconStar />
                 <span class="text-xs font-medium">Classic</span>
             </router-link>
 
@@ -24,7 +24,7 @@
                 'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
                 route.name === 'preferences' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
             ]">
-                <span class="text-xl">⚙️</span>
+                <IconSettings />
                 <span class="text-xs font-medium">Preferences</span>
             </router-link>
 
@@ -33,7 +33,7 @@
                 'flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300',
                 route.name === 'profile' ? 'text-[#0054ff]' : 'text-gray-400 hover:text-white'
             ]">
-                <span class="text-xl">👤</span>
+                <IconUser />
                 <span class="text-xs font-medium">Me</span>
             </router-link>
         </div>
@@ -42,6 +42,8 @@
 
 <script setup>
 import { computed } from 'vue';
+import { IconBarbellOff, IconStar, IconSettings, IconUser } from '@tabler/icons-vue'
+
 import { useRoute } from 'vue-router';
 
 const route = useRoute();

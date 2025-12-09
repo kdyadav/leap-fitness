@@ -7,7 +7,7 @@ import SplashScreen from './components/SplashScreen.vue';
 
 <template>
   <SplashScreen />
-  <div class="bg-black text-white">
+  <div class="bg-white text-black">
     <router-view />
   </div>
 </template>
