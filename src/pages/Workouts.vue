@@ -34,17 +34,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { IconChevronRight, IconClock } from '@tabler/icons-vue';
-import { workoutService } from '../services/db.js';
+import { useWorkoutStore } from '../stores/index.js';
 
-const workouts = ref([]);
+const workoutStore = useWorkoutStore();
+const workouts = computed(() => workoutStore.workouts);
 
 onMounted(async () => {
-    try {
-        workouts.value = await workoutService.getWorkouts();
-    } catch (error) {
-        console.error('Error fetching workouts:', error);
-    }
+    await workoutStore.loadWorkouts();
 });
 </script>
