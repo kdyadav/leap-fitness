@@ -516,6 +516,44 @@ export const useFavoriteStore = defineStore('favorite', {
     },
 });
 
+// Workout Logs Store
+export const useWorkoutLogStore = defineStore('workoutLog', {
+    state: () => ({
+        workoutLogs: [],
+        workoutStats: null,
+        logsLoading: false,
+    }),
+
+    actions: {
+        async loadUserWorkoutLogs() {
+            this.logsLoading = true;
+            try {
+                const authStore = useAuthStore();
+                const { workoutLogService } = await import('../services/db.js');
+                const logs = await workoutLogService.getUserWorkoutLogs(authStore.currentUser.id);
+                this.workoutLogs = logs;
+            } catch (error) {
+                console.error('Failed to load workout logs:', error);
+                throw error;
+            } finally {
+                this.logsLoading = false;
+            }
+        },
+
+        async loadUserWorkoutStats() {
+            try {
+                const authStore = useAuthStore();
+                const { workoutLogService } = await import('../services/db.js');
+                const stats = await workoutLogService.getUserWorkoutStats(authStore.currentUser.id);
+                this.workoutStats = stats;
+            } catch (error) {
+                console.error('Failed to load workout stats:', error);
+                throw error;
+            }
+        },
+    },
+});
+
 // Notification Store
 export const useNotificationStore = defineStore('notification', {
     state: () => ({

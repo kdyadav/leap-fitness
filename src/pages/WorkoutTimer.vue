@@ -16,7 +16,7 @@
                     <IconX :size="24" />
                 </button>
                 <h2 class="text-xl font-medium flex-1 text-center" style="color: var(--text-primary);">{{ workout.name
-                    }}</h2>
+                }}</h2>
                 <div class="flex items-center gap-2">
                     <button @click="showSettings = true"
                         class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
@@ -219,7 +219,7 @@
 
         <!-- Completion Modal -->
         <WorkoutCompletionModal :show="showCompletion" :workout-name="workout?.name || ''"
-            :duration="workout?.duration || 0" :calories="workout?.calories || 0"
+            :duration="totalWorkoutDuration" :calories="calculatedCalories"
             :exercise-count="workout?.exercises?.length || 0" @go-to-workouts="goToWorkouts"
             @restart="restartWorkout" />
 
@@ -232,11 +232,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconChevronRight, IconCheck, IconPlayerSkipForward, IconStretching, IconVolume, IconVolumeOff, IconMusic, IconMusicOff, IconSettings } from '@tabler/icons-vue';
 import { useWorkoutMusic, musicOptions, coachVoiceOptions } from '../composables/useWorkoutMusic';
 import WorkoutCompletionModal from '../components/workout/WorkoutCompletionModal.vue';
-import { useWorkoutStore } from '../stores/index.js';
+import { useWorkoutStore, useUserWorkoutStore, useAuthStore } from '../stores/index.js';
 
 const route = useRoute();
 const router = useRouter();
 const workoutStore = useWorkoutStore();
+const userWorkoutStore = useUserWorkoutStore();
+const authStore = useAuthStore();
 
 // Music and voice composable
 const {
@@ -268,6 +270,11 @@ const restTimeRemaining = ref(0);
 const getReadyTimeRemaining = ref(15);
 const showCompletion = ref(false);
 const showSettings = ref(false);
+
+// Workout session tracking
+const workoutSessionId = ref(null);
+const workoutStartTime = ref(null);
+const totalWorkoutDuration = ref(0);
 
 let timerInterval = null;
 
@@ -308,6 +315,16 @@ const progressPercentage = computed(() => {
     return ((currentExerciseIndex.value + 1) / totalExercises) * 100;
 });
 
+const calculatedCalories = computed(() => {
+    const intensityMultiplier = {
+        'beginner': 4,
+        'intermediate': 6,
+        'advanced': 8
+    };
+    const multiplier = intensityMultiplier[workout.value?.difficulty?.toLowerCase()] || 5;
+    return Math.round(totalWorkoutDuration.value * multiplier);
+});
+
 const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -328,10 +345,20 @@ const getEmbedUrl = (url) => {
     return url;
 };
 
-const startWorkout = () => {
+const startWorkout = async () => {
     workoutStarted.value = true;
     showGetReady.value = true;
     getReadyTimeRemaining.value = 15;
+    workoutStartTime.value = Date.now();
+
+    // Start workout session in database
+    try {
+        const session = await userWorkoutStore.startWorkout(workout.value.id);
+        workoutSessionId.value = session.id;
+    } catch (error) {
+        console.error('Failed to start workout session:', error);
+    }
+
     startTimer();
     if (isMusicEnabled.value) {
         playBackgroundMusic();
@@ -461,8 +488,36 @@ const skipGetReady = () => {
     speak(`Start ${currentExercise.value.name}`);
 };
 
-const completeWorkout = () => {
+const completeWorkout = async () => {
     if (timerInterval) clearInterval(timerInterval);
+
+    // Calculate workout duration in minutes
+    if (workoutStartTime.value) {
+        const endTime = Date.now();
+        totalWorkoutDuration.value = Math.round((endTime - workoutStartTime.value) / 1000 / 60); // in minutes
+    }
+
+    // Calculate calories burned (simple formula: 5 calories per minute based on intensity)
+    const intensityMultiplier = {
+        'beginner': 4,
+        'intermediate': 6,
+        'advanced': 8
+    };
+    const multiplier = intensityMultiplier[workout.value?.difficulty?.toLowerCase()] || 5;
+    const caloriesBurned = Math.round(totalWorkoutDuration.value * multiplier);
+
+    // Log the workout completion
+    if (workoutSessionId.value) {
+        try {
+            await userWorkoutStore.completeWorkout(workoutSessionId.value, {
+                duration: totalWorkoutDuration.value,
+                caloriesBurned: caloriesBurned
+            });
+        } catch (error) {
+            console.error('Failed to log workout completion:', error);
+        }
+    }
+
     showCompletion.value = true;
     stopBackgroundMusic();
     speak('Workout complete! Great job!');

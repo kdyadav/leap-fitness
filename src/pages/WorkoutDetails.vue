@@ -68,7 +68,7 @@
             </div>
 
             <!-- Equipment Section -->
-            <div v-if="workout.equipment.length > 0" class="p-6 rounded-2xl mb-6 shadow-sm"
+            <div v-if="workout.equipment && workout.equipment.length > 0" class="p-6 rounded-2xl mb-6 shadow-sm"
                 style="background-color: var(--card-bg);">
                 <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">Equipment Needed</h2>
                 <div class="flex flex-wrap gap-2">
@@ -80,7 +80,7 @@
             </div>
 
             <!-- Tips Section -->
-            <div v-if="workout.tips.length > 0" class="p-6 rounded-2xl mb-6 shadow-sm"
+            <div v-if="workout.tips && workout.tips.length > 0" class="p-6 rounded-2xl mb-6 shadow-sm"
                 style="background-color: var(--card-bg);">
                 <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">
                     <IconBulb :size="20" class="inline" /> Tips

@@ -596,6 +596,61 @@ export const favoriteService = {
     },
 };
 
+// Workout Logs Service
+export const workoutLogService = {
+    async getUserWorkoutLogs(userId) {
+        const logs = await db.workoutLogs
+            .where('userId')
+            .equals(userId)
+            .reverse()
+            .sortBy('date');
+
+        // Enrich logs with workout details
+        const enrichedLogs = await Promise.all(
+            logs.map(async (log) => {
+                const workout = await db.workouts.get(log.workoutId);
+                return {
+                    ...log,
+                    workoutName: workout?.name || 'Unknown Workout',
+                    workoutDifficulty: workout?.difficulty || 'N/A',
+                    workoutCategory: workout?.category || 'N/A',
+                };
+            })
+        );
+
+        return enrichedLogs;
+    },
+
+    async getWorkoutLogsByDateRange(userId, startDate, endDate) {
+        const logs = await db.workoutLogs
+            .where('userId')
+            .equals(userId)
+            .filter(log => log.date >= startDate && log.date <= endDate)
+            .toArray();
+
+        return logs;
+    },
+
+    async getUserWorkoutStats(userId) {
+        const logs = await db.workoutLogs
+            .where('userId')
+            .equals(userId)
+            .toArray();
+
+        const totalWorkouts = logs.length;
+        const totalDuration = logs.reduce((sum, log) => sum + (log.duration || 0), 0);
+        const totalCalories = logs.reduce((sum, log) => sum + (log.caloriesBurned || 0), 0);
+
+        return {
+            totalWorkouts,
+            totalDuration,
+            totalCalories,
+            averageDuration: totalWorkouts > 0 ? Math.round(totalDuration / totalWorkouts) : 0,
+            averageCalories: totalWorkouts > 0 ? Math.round(totalCalories / totalWorkouts) : 0,
+        };
+    },
+};
+
 // Database initialization and seeding
 export const initializeDatabase = async () => {
     try {
