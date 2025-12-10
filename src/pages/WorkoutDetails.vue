@@ -18,7 +18,7 @@
                             <IconClock :size="24" />
                         </span>
                         <span class="text-2xl font-bold" style="color: var(--text-primary);">{{ workout.duration
-                            }}</span>
+                        }}</span>
                         <span class="text-xs uppercase" style="color: var(--text-tertiary);">minutes</span>
                     </div>
                     <div class="flex flex-col items-center gap-1">
@@ -26,7 +26,7 @@
                             <IconFlame :size="24" />
                         </span>
                         <span class="text-2xl font-bold" style="color: var(--text-primary);">{{ workout.calories
-                            }}</span>
+                        }}</span>
                         <span class="text-xs uppercase" style="color: var(--text-tertiary);">calories</span>
                     </div>
                     <div class="flex flex-col items-center gap-1">
@@ -34,7 +34,7 @@
                             <IconChartBar :size="24" />
                         </span>
                         <span class="text-2xl font-bold" style="color: var(--text-primary);">{{ workout.difficulty
-                            }}</span>
+                        }}</span>
                         <span class="text-xs uppercase" style="color: var(--text-tertiary);">level</span>
                     </div>
                 </div>
@@ -110,161 +110,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { IconArrowLeft, IconArrowRight, IconClock, IconFlame, IconChartBar, IconBulb } from '@tabler/icons-vue';
+import { useWorkoutStore } from '../stores/index.js';
 
 const route = useRoute();
 const router = useRouter();
+const workoutStore = useWorkoutStore();
 
-const workout = ref(null);
+const workout = computed(() => workoutStore.currentWorkout);
 
-// Sample workout data (in a real app, this would come from a database/API)
-const workoutsData = {
-    1: {
-        id: 1,
-        name: 'Morning Yoga',
-        description: 'Start your day with energizing yoga poses to improve flexibility and mindfulness',
-        duration: 20,
-        calories: 150,
-        difficulty: 'Beginner',
-        icon: '🧘',
-        equipment: ['Yoga mat'],
-        exercises: [
-            { name: 'Child\'s Pose', duration: 60, icon: '🙏' },
-            { name: 'Downward Dog', duration: 45, icon: '🐕' },
-            { name: 'Cat-Cow Stretch', reps: 10, sets: 2, icon: '🐱' },
-            { name: 'Warrior Pose', duration: 30, sets: 2, icon: '⚔️' },
-            { name: 'Tree Pose', duration: 30, sets: 2, icon: '🌳' },
-            { name: 'Seated Forward Bend', duration: 60, icon: '🧘‍♀️' }
-        ],
-        tips: [
-            'Focus on your breathing throughout the practice',
-            'Don\'t push yourself too hard - yoga is about listening to your body',
-            'Use a yoga mat for better grip and comfort'
-        ]
-    },
-    2: {
-        id: 2,
-        name: 'HIIT Cardio',
-        description: 'High intensity interval training for fat burning and cardiovascular fitness',
-        duration: 30,
-        calories: 400,
-        difficulty: 'Advanced',
-        icon: '🔥',
-        equipment: [],
-        exercises: [
-            { name: 'Jumping Jacks', duration: 45, sets: 3, icon: '🤸' },
-            { name: 'Burpees', reps: 15, sets: 3, icon: '💪' },
-            { name: 'Mountain Climbers', duration: 45, sets: 3, icon: '⛰️' },
-            { name: 'High Knees', duration: 45, sets: 3, icon: '🦵' },
-            { name: 'Jump Squats', reps: 20, sets: 3, icon: '🏋️' },
-            { name: 'Sprint in Place', duration: 30, sets: 3, icon: '🏃' }
-        ],
-        tips: [
-            'Warm up for 5 minutes before starting',
-            'Rest 30 seconds between sets',
-            'Stay hydrated throughout the workout',
-            'Cool down with light stretching'
-        ]
-    },
-    3: {
-        id: 3,
-        name: 'Strength Training',
-        description: 'Build muscle and strength with targeted bodyweight exercises',
-        duration: 45,
-        calories: 300,
-        difficulty: 'Intermediate',
-        icon: '💪',
-        equipment: ['Dumbbells (optional)', 'Pull-up bar'],
-        exercises: [
-            { name: 'Push-ups', reps: 15, sets: 4, icon: '💪' },
-            { name: 'Pull-ups', reps: 10, sets: 3, icon: '🏋️' },
-            { name: 'Squats', reps: 20, sets: 4, icon: '🦵' },
-            { name: 'Lunges', reps: 12, sets: 3, icon: '🚶' },
-            { name: 'Plank', duration: 60, sets: 3, icon: '🏊' },
-            { name: 'Dips', reps: 12, sets: 3, icon: '💪' }
-        ],
-        tips: [
-            'Focus on proper form over number of reps',
-            'Rest 60-90 seconds between sets',
-            'Increase resistance gradually as you get stronger'
-        ]
-    },
-    4: {
-        id: 4,
-        name: 'Core Workout',
-        description: 'Strengthen your core muscles for better posture and stability',
-        duration: 15,
-        calories: 120,
-        difficulty: 'Beginner',
-        icon: '⭐',
-        equipment: ['Exercise mat'],
-        exercises: [
-            { name: 'Crunches', reps: 20, sets: 3, icon: '💫' },
-            { name: 'Bicycle Crunches', reps: 15, sets: 3, icon: '🚴' },
-            { name: 'Plank', duration: 45, sets: 3, icon: '🏊' },
-            { name: 'Russian Twists', reps: 20, sets: 3, icon: '🔄' },
-            { name: 'Leg Raises', reps: 12, sets: 3, icon: '🦵' }
-        ],
-        tips: [
-            'Keep your lower back pressed to the floor during exercises',
-            'Breathe out when contracting your abs',
-            'Quality over quantity - focus on engaging your core'
-        ]
-    },
-    5: {
-        id: 5,
-        name: 'Full Body Stretch',
-        description: 'Improve flexibility, reduce muscle tension, and aid recovery',
-        duration: 25,
-        calories: 80,
-        difficulty: 'Beginner',
-        icon: '🌟',
-        equipment: ['Yoga mat', 'Stretching strap (optional)'],
-        exercises: [
-            { name: 'Neck Rolls', duration: 30, icon: '🔄' },
-            { name: 'Shoulder Stretch', duration: 30, sets: 2, icon: '💪' },
-            { name: 'Hamstring Stretch', duration: 45, sets: 2, icon: '🦵' },
-            { name: 'Quad Stretch', duration: 30, sets: 2, icon: '🦿' },
-            { name: 'Hip Flexor Stretch', duration: 45, sets: 2, icon: '🧘' },
-            { name: 'Spinal Twist', duration: 45, sets: 2, icon: '🌀' }
-        ],
-        tips: [
-            'Never bounce while stretching',
-            'Hold each stretch for at least 30 seconds',
-            'Breathe deeply and relax into each stretch',
-            'Don\'t push to the point of pain'
-        ]
-    },
-    6: {
-        id: 6,
-        name: 'Running Intervals',
-        description: 'Boost cardiovascular endurance with structured interval running',
-        duration: 40,
-        calories: 450,
-        difficulty: 'Intermediate',
-        icon: '🏃',
-        equipment: ['Running shoes', 'Water bottle'],
-        exercises: [
-            { name: 'Warm-up Jog', duration: 300, icon: '🚶' },
-            { name: 'Sprint', duration: 60, sets: 6, icon: '💨' },
-            { name: 'Recovery Jog', duration: 120, sets: 6, icon: '🏃' },
-            { name: 'Tempo Run', duration: 300, icon: '🏃‍♂️' },
-            { name: 'Cool Down Walk', duration: 300, icon: '🚶‍♂️' }
-        ],
-        tips: [
-            'Start with a proper warm-up to prevent injury',
-            'Maintain good running form throughout',
-            'Alternate between high and low intensity',
-            'Track your progress over time'
-        ]
-    }
-};
-
-onMounted(() => {
-    const workoutId = route.params.id;
-    workout.value = workoutsData[workoutId] || null;
+onMounted(async () => {
+    const workoutId = parseInt(route.params.id);
+    await workoutStore.loadWorkout(workoutId);
 });
 
 const goBack = () => {

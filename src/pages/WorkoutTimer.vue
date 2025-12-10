@@ -16,7 +16,7 @@
                     <IconX :size="24" />
                 </button>
                 <h2 class="text-xl font-medium flex-1 text-center" style="color: var(--text-primary);">{{ workout.name
-                }}</h2>
+                    }}</h2>
                 <div class="flex items-center gap-2">
                     <button @click="showSettings = true"
                         class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
@@ -232,10 +232,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconChevronRight, IconCheck, IconPlayerSkipForward, IconStretching, IconVolume, IconVolumeOff, IconMusic, IconMusicOff, IconSettings } from '@tabler/icons-vue';
 import { useWorkoutMusic, musicOptions, coachVoiceOptions } from '../composables/useWorkoutMusic';
 import WorkoutCompletionModal from '../components/workout/WorkoutCompletionModal.vue';
-import { workoutsData } from '../data/workouts';
+import { useWorkoutStore } from '../stores/index.js';
 
 const route = useRoute();
 const router = useRouter();
+const workoutStore = useWorkoutStore();
 
 // Music and voice composable
 const {
@@ -503,9 +504,10 @@ const changeMusicTrack = () => {
     changeMusicTrackComposable(workoutStarted.value, isPaused.value);
 };
 
-onMounted(() => {
-    const workoutId = route.params.id;
-    workout.value = workoutsData[workoutId] || null;
+onMounted(async () => {
+    const workoutId = parseInt(route.params.id);
+    await workoutStore.loadWorkout(workoutId);
+    workout.value = workoutStore.currentWorkout;
 
     if (workout.value && timerMode.value === 'countdown') {
         timeRemaining.value = currentExercise.value.duration;
