@@ -390,6 +390,16 @@ export const userWorkoutService = {
         return await db.userWorkouts.get(userWorkoutId);
     },
 
+    async logIncompleteWorkout(userWorkoutId, stats = {}) {
+        await db.userWorkouts.update(userWorkoutId, {
+            status: 'incomplete',
+            endedAt: new Date(),
+            ...stats,
+        });
+
+        return await db.userWorkouts.get(userWorkoutId);
+    },
+
     async pauseWorkout(userWorkoutId) {
         await db.userWorkouts.update(userWorkoutId, { status: 'paused' });
         return await db.userWorkouts.get(userWorkoutId);

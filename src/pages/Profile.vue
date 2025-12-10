@@ -64,6 +64,41 @@
             </div>
 
             <!-- Workout History Section -->
+            <!-- Incomplete Workouts Section -->
+            <div v-if="incompleteWorkouts.length > 0" class="workout-history incomplete-section">
+                <h2 class="section-title">Incomplete Workouts</h2>
+                <div class="workout-log-list">
+                    <div v-for="workout in incompleteWorkouts" :key="workout.id"
+                        class="workout-log-item incomplete-item">
+                        <div class="log-info">
+                            <div class="log-title">{{ getWorkoutName(workout.workoutId) }}</div>
+                            <div class="log-meta">
+                                <span class="log-badge badge-incomplete">
+                                    Incomplete
+                                </span>
+                                <span class="log-date">{{ formatLogDate(workout.endedAt || workout.startedAt) }}</span>
+                            </div>
+                            <div v-if="workout.completionPercentage" class="completion-bar">
+                                <div class="completion-fill" :style="{ width: workout.completionPercentage + '%' }">
+                                </div>
+                                <span class="completion-text">{{ Math.round(workout.completionPercentage) }}%
+                                    complete</span>
+                            </div>
+                        </div>
+                        <div class="log-stats">
+                            <div class="log-stat">
+                                <span class="stat-icon-small">⏱️</span>
+                                <span>{{ workout.duration || 0 }} min</span>
+                            </div>
+                            <div v-if="workout.exercisesCompleted !== undefined" class="log-stat">
+                                <span class="stat-icon-small">✓</span>
+                                <span>{{ workout.exercisesCompleted }}/{{ workout.totalExercises }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="workout-history">
                 <h2 class="section-title">Recent Workouts</h2>
                 <div v-if="logsLoading" class="loading">Loading workout history...</div>
@@ -115,20 +150,28 @@
 <script setup>
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore, useWorkoutLogStore } from '@/stores';
+import { useAuthStore, useWorkoutLogStore, useUserWorkoutStore, useWorkoutStore } from '@/stores';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const workoutLogStore = useWorkoutLogStore();
+const userWorkoutStore = useUserWorkoutStore();
+const workoutStore = useWorkoutStore();
 
 const user = computed(() => authStore.currentUser);
 const workoutLogs = computed(() => workoutLogStore.workoutLogs);
 const workoutStats = computed(() => workoutLogStore.workoutStats);
 const logsLoading = computed(() => workoutLogStore.logsLoading);
+const incompleteWorkouts = computed(() => userWorkoutStore.incompleteWorkouts);
 
 const recentWorkoutLogs = computed(() => {
     return workoutLogs.value.slice(0, 10); // Show last 10 workouts
 });
+
+const getWorkoutName = (workoutId) => {
+    const workout = workoutStore.workouts.find(w => w.id === workoutId);
+    return workout?.name || 'Workout';
+};
 
 const userInitials = computed(() => {
     if (!user.value?.name) return 'U';
@@ -179,6 +222,8 @@ const handleLogout = async () => {
 onMounted(async () => {
     await workoutLogStore.loadUserWorkoutLogs();
     await workoutLogStore.loadUserWorkoutStats();
+    await userWorkoutStore.loadUserWorkouts();
+    await workoutStore.loadWorkouts();
 });
 </script>
 
@@ -427,6 +472,46 @@ onMounted(async () => {
 .badge-advanced {
     background: #fee2e2;
     color: #b91c1c;
+}
+
+.badge-incomplete {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.incomplete-section {
+    border-left: 3px solid #f59e0b;
+    padding-left: 1rem;
+    margin-bottom: 2rem;
+}
+
+.incomplete-item {
+    border-color: #fbbf24;
+    background: linear-gradient(to right, #fffbeb, var(--card-bg));
+}
+
+.completion-bar {
+    margin-top: 0.75rem;
+    background: #e5e7eb;
+    height: 6px;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+}
+
+.completion-fill {
+    height: 100%;
+    background: linear-gradient(to right, #f59e0b, #fbbf24);
+    transition: width 0.3s ease;
+}
+
+.completion-text {
+    position: absolute;
+    top: -22px;
+    right: 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .log-date {

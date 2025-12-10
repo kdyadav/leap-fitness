@@ -241,6 +241,7 @@ export const useUserWorkoutStore = defineStore('userWorkout', {
     getters: {
         completedWorkouts: (state) => state.userWorkouts.filter(w => w.status === 'completed'),
         inProgressWorkouts: (state) => state.userWorkouts.filter(w => w.status === 'in-progress'),
+        incompleteWorkouts: (state) => state.userWorkouts.filter(w => w.status === 'incomplete'),
     },
 
     actions: {
@@ -270,6 +271,21 @@ export const useUserWorkoutStore = defineStore('userWorkout', {
                 return completed;
             } catch (error) {
                 useNotificationStore().addNotification({ type: 'error', message: 'Failed to complete workout' });
+                throw error;
+            }
+        },
+
+        async logIncompleteWorkout(userWorkoutId, workoutData) {
+            try {
+                const incomplete = await userWorkoutService.logIncompleteWorkout(userWorkoutId, workoutData);
+                const index = this.userWorkouts.findIndex(w => w.id === userWorkoutId);
+                if (index !== -1) {
+                    this.userWorkouts[index] = incomplete;
+                }
+                this.currentUserWorkout = null;
+                return incomplete;
+            } catch (error) {
+                console.error('Failed to log incomplete workout:', error);
                 throw error;
             }
         },

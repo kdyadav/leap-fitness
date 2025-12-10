@@ -16,7 +16,7 @@
                     <IconX :size="24" />
                 </button>
                 <h2 class="text-xl font-medium flex-1 text-center" style="color: var(--text-primary);">{{ workout.name
-                }}</h2>
+                    }}</h2>
                 <div class="flex items-center gap-2">
                     <button @click="showSettings = true"
                         class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
@@ -540,8 +540,26 @@ const goToWorkouts = () => {
     router.push({ name: 'workouts' });
 };
 
-const handleExit = () => {
+const handleExit = async () => {
     if (confirm('Are you sure you want to exit? Your progress will be lost.')) {
+        // Log incomplete workout if started
+        if (workoutSessionId.value && workoutStarted.value && !showCompletion.value) {
+            try {
+                const duration = Math.round((Date.now() - workoutStartTime.value) / 1000 / 60);
+                const caloriesBurned = Math.round(duration * 4);
+
+                await userWorkoutStore.logIncompleteWorkout(workoutSessionId.value, {
+                    duration,
+                    caloriesBurned,
+                    exercisesCompleted: currentExerciseIndex.value,
+                    totalExercises: workout.value.exercises.length,
+                    completionPercentage: progressPercentage.value
+                });
+            } catch (error) {
+                console.error('Failed to log incomplete workout:', error);
+            }
+        }
+
         stopBackgroundMusic();
         router.back();
     }
@@ -569,9 +587,27 @@ onMounted(async () => {
     }
 });
 
-onUnmounted(() => {
+onUnmounted(async () => {
     if (timerInterval) clearInterval(timerInterval);
     cleanup();
+
+    // Log incomplete workout if user navigated away without completing
+    if (workoutSessionId.value && workoutStarted.value && !showCompletion.value) {
+        try {
+            const duration = Math.round((Date.now() - workoutStartTime.value) / 1000 / 60);
+            const caloriesBurned = Math.round(duration * 4);
+
+            await userWorkoutStore.logIncompleteWorkout(workoutSessionId.value, {
+                duration,
+                caloriesBurned,
+                exercisesCompleted: currentExerciseIndex.value,
+                totalExercises: workout.value.exercises.length,
+                completionPercentage: progressPercentage.value
+            });
+        } catch (error) {
+            console.error('Failed to log incomplete workout:', error);
+        }
+    }
 });
 
 watch(workoutStarted, (started) => {
