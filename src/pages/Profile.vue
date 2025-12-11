@@ -90,9 +90,31 @@
                                 <span class="stat-icon-small">⏱️</span>
                                 <span>{{ workout.duration || 0 }} min</span>
                             </div>
-                            <div v-if="workout.exercisesCompleted !== undefined" class="log-stat">
+                            <div class="log-stat">
                                 <span class="stat-icon-small">✓</span>
                                 <span>{{ workout.exercisesCompleted }}/{{ workout.totalExercises }}</span>
+                            </div>
+                            <div class="action-buttons">
+                                <button @click="resumeWorkout(workout.workoutId, workout.id)" class="resume-btn"
+                                    title="Resume workout">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    Resume
+                                </button>
+                                <button @click="deleteIncompleteWorkout(workout.id)" class="delete-btn"
+                                    title="Delete workout">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path
+                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                        </path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -212,6 +234,24 @@ const formatLogDate = (date) => {
         day: 'numeric',
         year: logDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
     });
+};
+
+const resumeWorkout = (workoutId, sessionId) => {
+    router.push({
+        name: 'workout-timer',
+        params: { id: workoutId },
+        query: { resume: 'true', sessionId: sessionId }
+    });
+};
+
+const deleteIncompleteWorkout = async (sessionId) => {
+    if (confirm('Are you sure you want to delete this incomplete workout?')) {
+        try {
+            await userWorkoutStore.deleteUserWorkoutSession(sessionId);
+        } catch (error) {
+            console.error('Failed to delete incomplete workout:', error);
+        }
+    }
 };
 
 const handleLogout = async () => {
@@ -536,6 +576,75 @@ onMounted(async () => {
 
 .stat-icon-small {
     font-size: 1rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.resume-btn {
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.resume-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+}
+
+.resume-btn:active {
+    transform: translateY(0);
+}
+
+.resume-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.delete-btn {
+    padding: 0.5rem;
+    background: var(--bg-tertiary);
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    min-width: 40px;
+}
+
+.delete-btn:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
+}
+
+.delete-btn:active {
+    transform: translateY(0);
+}
+
+.delete-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 @media (max-width: 640px) {

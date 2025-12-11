@@ -340,6 +340,30 @@ export const useUserWorkoutStore = defineStore('userWorkout', {
                 console.error('Failed to load current workout:', error);
             }
         },
+
+        async getUserWorkoutSession(sessionId) {
+            try {
+                const session = await userWorkoutService.getUserWorkoutSession(sessionId);
+                return session;
+            } catch (error) {
+                console.error('Failed to load workout session:', error);
+                throw error;
+            }
+        },
+
+        async deleteUserWorkoutSession(sessionId) {
+            try {
+                await userWorkoutService.deleteUserWorkoutSession(sessionId);
+                // Remove from local state
+                const index = this.userWorkouts.findIndex(w => w.id === sessionId);
+                if (index !== -1) {
+                    this.userWorkouts.splice(index, 1);
+                }
+            } catch (error) {
+                console.error('Failed to delete workout session:', error);
+                throw error;
+            }
+        },
     },
 });
 

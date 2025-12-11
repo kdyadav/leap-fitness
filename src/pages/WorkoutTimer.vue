@@ -1,6 +1,22 @@
 <template>
     <div class="min-h-screen p-4" style="background-color: var(--bg-primary); color: var(--text-primary);">
         <div v-if="workout" class="max-w-2xl mx-auto">
+            <!-- Resume Banner -->
+            <div v-if="resumedSessionId && !workoutStarted"
+                class="mb-4 p-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                <div class="flex items-center gap-2 mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span class="font-bold">Resuming Workout</span>
+                </div>
+                <p class="text-sm opacity-90">Starting from Exercise {{ currentExerciseIndex + 1 }} of {{
+                    workout.exercises.length }}</p>
+            </div>
+
             <!-- Progress Bar -->
             <div class="h-2 rounded-full overflow-hidden mb-8" style="background-color: var(--bg-tertiary);">
                 <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"
@@ -16,7 +32,7 @@
                     <IconX :size="24" />
                 </button>
                 <h2 class="text-xl font-medium flex-1 text-center" style="color: var(--text-primary);">{{ workout.name
-                    }}</h2>
+                }}</h2>
                 <div class="flex items-center gap-2">
                     <button @click="showSettings = true"
                         class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
@@ -275,6 +291,7 @@ const showSettings = ref(false);
 const workoutSessionId = ref(null);
 const workoutStartTime = ref(null);
 const totalWorkoutDuration = ref(0);
+const resumedSessionId = ref(null); // Track the session being resumed
 
 let timerInterval = null;
 
@@ -553,7 +570,9 @@ const handleExit = async () => {
                     caloriesBurned,
                     exercisesCompleted: currentExerciseIndex.value,
                     totalExercises: workout.value.exercises.length,
-                    completionPercentage: progressPercentage.value
+                    completionPercentage: progressPercentage.value,
+                    currentExerciseIndex: currentExerciseIndex.value,
+                    currentSet: currentSet.value
                 });
             } catch (error) {
                 console.error('Failed to log incomplete workout:', error);
@@ -582,6 +601,28 @@ onMounted(async () => {
     await workoutStore.loadWorkout(workoutId);
     workout.value = workoutStore.currentWorkout;
 
+    // Check if resuming from incomplete workout
+    if (route.query.resume && route.query.sessionId) {
+        try {
+            const sessionId = parseInt(route.query.sessionId);
+            const session = await userWorkoutStore.getUserWorkoutSession(sessionId);
+
+            if (session && session.currentExerciseIndex !== undefined) {
+                currentExerciseIndex.value = session.currentExerciseIndex;
+                currentSet.value = session.currentSet || 1;
+                resumedSessionId.value = sessionId;
+
+                // Delete the old incomplete session since we're resuming it
+                await userWorkoutStore.deleteUserWorkoutSession(sessionId);
+
+                // Show a message that we're resuming
+                speak(`Resuming from exercise ${currentExerciseIndex.value + 1}`);
+            }
+        } catch (error) {
+            console.error('Failed to restore workout state:', error);
+        }
+    }
+
     if (workout.value && timerMode.value === 'countdown') {
         timeRemaining.value = currentExercise.value.duration;
     }
@@ -602,7 +643,9 @@ onUnmounted(async () => {
                 caloriesBurned,
                 exercisesCompleted: currentExerciseIndex.value,
                 totalExercises: workout.value.exercises.length,
-                completionPercentage: progressPercentage.value
+                completionPercentage: progressPercentage.value,
+                currentExerciseIndex: currentExerciseIndex.value,
+                currentSet: currentSet.value
             });
         } catch (error) {
             console.error('Failed to log incomplete workout:', error);

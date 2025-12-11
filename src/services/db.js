@@ -427,6 +427,14 @@ export const userWorkoutService = {
             .and(uw => uw.status === 'in-progress' || uw.status === 'paused')
             .first();
     },
+
+    async getUserWorkoutSession(sessionId) {
+        return await db.userWorkouts.get(sessionId);
+    },
+
+    async deleteUserWorkoutSession(sessionId) {
+        await db.userWorkouts.delete(sessionId);
+    },
 };
 
 // Progress Service
