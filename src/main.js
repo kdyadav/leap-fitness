@@ -6,6 +6,19 @@ import App from './App.vue'
 import { seedDatabase } from './services/seedDatabase'
 import { resetDatabase } from './utils/resetDatabase'
 import { useAuthStore } from './stores'
+import { registerSW } from 'virtual:pwa-register'
+
+// Register service worker for PWA
+const updateSW = registerSW({
+    onNeedRefresh() {
+        if (confirm('New content available. Reload to update?')) {
+            updateSW(true)
+        }
+    },
+    onOfflineReady() {
+        console.log('App ready to work offline')
+    },
+})
 
 // Initialize and seed database
 seedDatabase()

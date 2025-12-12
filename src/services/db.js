@@ -195,11 +195,33 @@ export const workoutService = {
             query = query.where('category').equals(filters.category);
         }
 
-        return await query.toArray();
+        const workouts = await query.toArray();
+
+        // Fetch exercises for each workout via workoutExercises junction table
+        const workoutsWithExercises = await Promise.all(
+            workouts.map(async (workout) => {
+                const exercises = await workoutExerciseService.getWorkoutExercises(workout.id);
+                return {
+                    ...workout,
+                    exercises
+                };
+            })
+        );
+
+        return workoutsWithExercises;
     },
 
     async getWorkout(workoutId) {
-        return await db.workouts.get(workoutId);
+        const workout = await db.workouts.get(workoutId);
+        if (!workout) return null;
+
+        // Fetch exercises via workoutExercises junction table
+        const exercises = await workoutExerciseService.getWorkoutExercises(workoutId);
+
+        return {
+            ...workout,
+            exercises
+        };
     },
 
     async createWorkout(workoutData) {
@@ -624,20 +646,24 @@ export const workoutLogService = {
             .reverse()
             .sortBy('date');
 
-        // Enrich logs with workout details
+        // Enrich logs with workout details and filter out logs with missing workouts
         const enrichedLogs = await Promise.all(
             logs.map(async (log) => {
                 const workout = await db.workouts.get(log.workoutId);
+                if (!workout) {
+                    return null; // Mark for filtering
+                }
                 return {
                     ...log,
-                    workoutName: workout?.name || 'Unknown Workout',
-                    workoutDifficulty: workout?.difficulty || 'N/A',
-                    workoutCategory: workout?.category || 'N/A',
+                    workoutName: workout.name,
+                    workoutDifficulty: workout.difficulty,
+                    workoutCategory: workout.category,
                 };
             })
         );
 
-        return enrichedLogs;
+        // Filter out null entries (logs with missing workouts)
+        return enrichedLogs.filter(log => log !== null);
     },
 
     async getWorkoutLogsByDateRange(userId, startDate, endDate) {
