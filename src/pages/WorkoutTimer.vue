@@ -249,6 +249,7 @@ import { IconX, IconBed, IconPlayerPlay, IconPlayerPause, IconChevronLeft, IconC
 import { useWorkoutMusic, musicOptions, coachVoiceOptions } from '../composables/useWorkoutMusic';
 import WorkoutCompletionModal from '../components/workout/WorkoutCompletionModal.vue';
 import { useWorkoutStore, useUserWorkoutStore, useAuthStore } from '../stores/index.js';
+import { planProgressService } from '../services/db.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -535,6 +536,27 @@ const completeWorkout = async () => {
         }
     }
 
+    // If this is part of a plan, mark the day as completed
+    const planId = route.query.planId;
+    const dayNumber = route.query.dayNumber;
+
+    if (planId && dayNumber && authStore.currentUser?.id) {
+        try {
+            await planProgressService.completePlanDay(
+                authStore.currentUser.id,
+                parseInt(planId),
+                parseInt(dayNumber),
+                {
+                    duration: totalWorkoutDuration.value,
+                    caloriesBurned: caloriesBurned
+                }
+            );
+            console.log(`Plan day ${dayNumber} marked as completed`);
+        } catch (error) {
+            console.error('Failed to log plan progress:', error);
+        }
+    }
+
     showCompletion.value = true;
     stopBackgroundMusic();
     speak('Workout complete! Great job!');
@@ -597,9 +619,28 @@ const changeMusicTrack = () => {
 };
 
 onMounted(async () => {
-    const workoutId = parseInt(route.params.id);
-    await workoutStore.loadWorkout(workoutId);
-    workout.value = workoutStore.currentWorkout;
+    const workoutId = parseInt(route.params.id) || route.params.id; // Keep as string if not a number
+
+    // Check if this is a generated workout
+    const isGenerated = route.query.generated === 'true';
+
+    if (isGenerated) {
+        // Load generated workout from sessionStorage
+        const storedWorkout = sessionStorage.getItem('currentWorkout');
+        if (storedWorkout) {
+            workout.value = JSON.parse(storedWorkout);
+            console.log('Loaded generated workout:', workout.value);
+        } else {
+            console.error('No generated workout found in sessionStorage');
+            // Fallback: try to load from database
+            await workoutStore.loadWorkout(workoutId);
+            workout.value = workoutStore.currentWorkout;
+        }
+    } else {
+        // Load regular workout from database
+        await workoutStore.loadWorkout(workoutId);
+        workout.value = workoutStore.currentWorkout;
+    }
 
     // Check if resuming from incomplete workout
     if (route.query.resume && route.query.sessionId) {

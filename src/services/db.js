@@ -18,6 +18,7 @@ db.version(1).stores({
     workoutLogs: '++id, userId, workoutId, date, duration, caloriesBurned',
     goals: '++id, userId, type, target, current, status, createdAt, completedAt',
     favorites: '++id, userId, workoutId, addedAt',
+    planProgress: '++id, [userId+programId], [userId+programId+dayNumber], dayNumber, completedAt', // Track completed days in a plan
 });
 
 // Database Services
@@ -667,6 +668,360 @@ export const workoutLogService = {
             averageCalories: totalWorkouts > 0 ? Math.round(totalCalories / totalWorkouts) : 0,
         };
     },
+};
+
+// Plan Progress Service - Track completed days in a plan
+export const planProgressService = {
+    async completePlanDay(userId, programId, dayNumber, workoutData) {
+        const id = await db.planProgress.add({
+            userId,
+            programId,
+            dayNumber,
+            completedAt: new Date(),
+            duration: workoutData.duration,
+            caloriesBurned: workoutData.caloriesBurned,
+        });
+        return await db.planProgress.get(id);
+    },
+
+    async getPlanProgress(userId, programId) {
+        const completedDays = await db.planProgress
+            .where(['userId', 'programId'])
+            .equals([userId, programId])
+            .sortBy('dayNumber');
+        return completedDays;
+    },
+
+    async isDayCompleted(userId, programId, dayNumber) {
+        const day = await db.planProgress
+            .where(['userId', 'programId', 'dayNumber'])
+            .equals([userId, programId, dayNumber])
+            .first();
+        return !!day;
+    },
+
+    async getLastCompletedDay(userId, programId) {
+        const completedDays = await db.planProgress
+            .where(['userId', 'programId'])
+            .equals([userId, programId])
+            .sortBy('dayNumber');
+
+        if (completedDays.length === 0) return 0;
+        return completedDays[completedDays.length - 1].dayNumber;
+    },
+
+    async getCompletedDaysCount(userId, programId) {
+        return await db.planProgress
+            .where(['userId', 'programId'])
+            .equals([userId, programId])
+            .count();
+    },
+
+    async resetPlanProgress(userId, programId) {
+        const entries = await db.planProgress
+            .where(['userId', 'programId'])
+            .equals([userId, programId])
+            .toArray();
+
+        for (const entry of entries) {
+            await db.planProgress.delete(entry.id);
+        }
+        return { success: true };
+    },
+};
+
+// Workout Generator Service - Progressive Workout System
+export const workoutGeneratorService = {
+    // Calculate progressive value based on day and progression type
+    calculateProgression(day, totalDays, startValue, endValue, progressionType = 'linear') {
+        if (totalDays <= 1) return startValue;
+
+        const progress = (day - 1) / (totalDays - 1); // 0 to 1
+
+        switch (progressionType) {
+            case 'linear':
+                return Math.round(startValue + (endValue - startValue) * progress);
+
+            case 'exponential':
+                // Slower start, faster end
+                const expProgress = Math.pow(progress, 1.5);
+                return Math.round(startValue + (endValue - startValue) * expProgress);
+
+            case 'stepped':
+                // Increases in weekly steps
+                const weekProgress = Math.floor(progress * 4) / 4; // 4 weeks
+                return Math.round(startValue + (endValue - startValue) * weekProgress);
+
+            case 'logarithmic':
+                // Faster start, slower end
+                const logProgress = Math.sqrt(progress);
+                return Math.round(startValue + (endValue - startValue) * logProgress);
+
+            default:
+                return Math.round(startValue + (endValue - startValue) * progress);
+        }
+    },
+
+    // Select exercises for a specific day from exercise pool
+    async selectExercisesForDay(exercisePool, structure, dayNumber, category = null) {
+        const allExercises = await exerciseService.getExercises();
+
+        // Filter exercises from pool
+        let poolExercises = allExercises.filter(ex => exercisePool.includes(ex.id));
+
+        // Further filter by category if specified
+        if (category) {
+            poolExercises = poolExercises.filter(ex => ex.category === category);
+        }
+
+        if (poolExercises.length === 0) {
+            // Fallback to all exercises if pool is empty
+            poolExercises = allExercises;
+        }
+
+        const { warmup = 2, main = 4, cooldown = 2 } = structure;
+        const totalNeeded = warmup + main + cooldown;
+
+        // Rotate exercises based on day to ensure variety
+        const offset = ((dayNumber - 1) * main) % poolExercises.length;
+        const rotatedExercises = [
+            ...poolExercises.slice(offset),
+            ...poolExercises.slice(0, offset)
+        ];
+
+        // Select exercises by type if available, otherwise just rotate
+        const selectedExercises = [];
+
+        // Try to get warmup exercises
+        const warmupExs = rotatedExercises.filter(ex =>
+            ex.name?.toLowerCase().includes('stretch') ||
+            ex.name?.toLowerCase().includes('warmup') ||
+            ex.category === 'flexibility'
+        ).slice(0, warmup);
+
+        // Fill remaining warmup slots
+        if (warmupExs.length < warmup) {
+            warmupExs.push(...rotatedExercises.slice(0, warmup - warmupExs.length));
+        }
+        selectedExercises.push(...warmupExs);
+
+        // Get main exercises (excluding warmup)
+        const mainExs = rotatedExercises
+            .filter(ex => !selectedExercises.includes(ex))
+            .slice(0, main);
+        selectedExercises.push(...mainExs);
+
+        // Get cooldown exercises
+        const cooldownExs = rotatedExercises
+            .filter(ex => !selectedExercises.includes(ex))
+            .slice(0, cooldown);
+        selectedExercises.push(...cooldownExs);
+
+        return selectedExercises.slice(0, totalNeeded);
+    },
+
+    // Calculate exercise duration based on total workout duration
+    calculateExerciseDuration(exercise, totalDuration, sets, reps) {
+        // If exercise has specific duration, scale it
+        if (exercise.duration) {
+            return exercise.duration;
+        }
+
+        // Otherwise, distribute total duration among exercises
+        // Assuming rest time between sets
+        const timePerRep = 3; // seconds
+        const restBetweenSets = 30; // seconds
+
+        return (reps * timePerRep + (sets - 1) * restBetweenSets);
+    },
+
+    // Generate a complete workout for a specific day in a program
+    async generateWorkoutForDay(programId, dayNumber) {
+        try {
+            const program = await programService.getProgram(programId);
+
+            if (!program) {
+                throw new Error('Program not found');
+            }
+
+            // Use new structure if available, otherwise fallback to old structure
+            const workoutTemplate = program.workoutTemplate || {
+                category: 'general',
+                exercisePool: program.exercisePool || [],
+                structure: program.structure || { warmup: 2, main: 4, cooldown: 2 }
+            };
+
+            const progression = program.progression || {
+                startingDuration: 15,
+                endingDuration: 30,
+                startingSets: 2,
+                endingSets: 4,
+                startingReps: 10,
+                endingReps: 20,
+                progressionType: 'linear'
+            };
+
+            // Calculate progressive values for this specific day
+            const duration = this.calculateProgression(
+                dayNumber,
+                program.duration,
+                progression.startingDuration,
+                progression.endingDuration,
+                progression.progressionType
+            );
+
+            const sets = this.calculateProgression(
+                dayNumber,
+                program.duration,
+                progression.startingSets,
+                progression.endingSets,
+                progression.progressionType
+            );
+
+            const reps = this.calculateProgression(
+                dayNumber,
+                program.duration,
+                progression.startingReps,
+                progression.endingReps,
+                progression.progressionType
+            );
+
+            // Calculate calories based on duration and difficulty
+            const difficultyMultiplier = {
+                'beginner': 8,
+                'intermediate': 12,
+                'advanced': 15
+            };
+            const calories = Math.round(duration * (difficultyMultiplier[program.difficulty] || 10));
+
+            // Select exercises for this day
+            const exercises = await this.selectExercisesForDay(
+                workoutTemplate.exercisePool,
+                workoutTemplate.structure,
+                dayNumber,
+                workoutTemplate.category
+            );
+
+            // Build dynamic workout with progressive values
+            const generatedExercises = exercises.map((ex, index) => ({
+                id: ex.id,
+                name: ex.name,
+                sets: sets,
+                reps: ex.reps ? reps : undefined,
+                duration: ex.duration || this.calculateExerciseDuration(ex, duration, sets, reps),
+                icon: ex.icon || '💪',
+                category: ex.category,
+                order: index + 1,
+                videoUrl: ex.videoUrl || null
+            }));
+
+            return {
+                id: `generated-${programId}-day-${dayNumber}`,
+                name: `Day ${dayNumber} - ${program.name}`,
+                description: `Progressive workout with ${duration} min, ${sets} sets, ${reps} reps`,
+                duration: duration,
+                calories: calories,
+                difficulty: program.difficulty,
+                category: workoutTemplate.category,
+                icon: this.getWorkoutIcon(workoutTemplate.category),
+                exercises: generatedExercises,
+                generatedAt: new Date(),
+                programId: programId,
+                programDay: dayNumber,
+                progressiveStats: {
+                    sets,
+                    reps,
+                    duration,
+                    calories
+                }
+            };
+        } catch (error) {
+            console.error('Error generating workout:', error);
+            throw error;
+        }
+    },
+
+    // Get icon based on workout category
+    getWorkoutIcon(category) {
+        const icons = {
+            'cardio': '🔥',
+            'strength': '💪',
+            'flexibility': '🧘',
+            'mixed': '🏋️',
+            'general': '⚡'
+        };
+        return icons[category] || '⚡';
+    },
+
+    // Generate all workouts for a program (for preview/planning)
+    async generateProgramTimeline(programId) {
+        const program = await programService.getProgram(programId);
+
+        if (!program) {
+            throw new Error('Program not found');
+        }
+
+        const timeline = [];
+        const daysPerWeek = program.schedule?.daysPerWeek || 3;
+        let workoutDayCounter = 0;
+
+        for (let day = 1; day <= program.duration; day++) {
+            const dayInWeek = ((day - 1) % 7) + 1;
+            const isWorkoutDay = workoutDayCounter < daysPerWeek;
+
+            if (isWorkoutDay) {
+                const workout = await this.generateWorkoutForDay(programId, day);
+                timeline.push({
+                    type: 'workout',
+                    dayNumber: day,
+                    workout: workout
+                });
+                workoutDayCounter++;
+            } else {
+                timeline.push({
+                    type: 'rest',
+                    dayNumber: day
+                });
+            }
+
+            // Reset weekly counter
+            if (dayInWeek === 7) {
+                workoutDayCounter = 0;
+            }
+        }
+
+        return timeline;
+    },
+
+    // Get progression summary for a program
+    async getProgressionSummary(programId) {
+        const program = await programService.getProgram(programId);
+
+        if (!program || !program.progression) {
+            return null;
+        }
+
+        const { progression } = program;
+
+        return {
+            duration: {
+                start: progression.startingDuration,
+                end: progression.endingDuration,
+                increase: progression.endingDuration - progression.startingDuration
+            },
+            sets: {
+                start: progression.startingSets,
+                end: progression.endingSets,
+                increase: progression.endingSets - progression.startingSets
+            },
+            reps: {
+                start: progression.startingReps,
+                end: progression.endingReps,
+                increase: progression.endingReps - progression.startingReps
+            },
+            type: progression.progressionType
+        };
+    }
 };
 
 // Database initialization and seeding

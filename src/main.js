@@ -4,10 +4,14 @@ import { router } from './router'
 import './style.css'
 import App from './App.vue'
 import { seedDatabase } from './services/seedDatabase'
+import { resetDatabase } from './utils/resetDatabase'
 import { useAuthStore } from './stores'
 
 // Initialize and seed database
 seedDatabase()
+
+// Make resetDatabase available globally for development
+window.resetDatabase = resetDatabase
 
 const app = createApp(App)
 const pinia = createPinia()

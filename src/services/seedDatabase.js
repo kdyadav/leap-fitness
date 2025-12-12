@@ -95,15 +95,52 @@ export const seedDatabase = async () => {
 
         await db.workoutExercises.bulkAdd(workoutExerciseRelations);
 
-        // Create some sample programs
+        // Get all exercise IDs for exercise pools
+        const allExerciseIds = allExercises.map(ex => ex.id);
+        const cardioExerciseIds = allExercises.filter(ex => ex.category === 'cardio').map(ex => ex.id);
+        const strengthExerciseIds = allExercises.filter(ex => ex.category === 'strength').map(ex => ex.id);
+        const flexibilityExerciseIds = allExercises.filter(ex => ex.category === 'flexibility').map(ex => ex.id);
+
+        // Create progressive programs with new structure
         const programs = [
             {
                 name: 'Beginner Fitness Journey',
                 difficulty: 'beginner',
                 duration: 28, // days
-                description: 'Perfect for those just starting their fitness journey',
-                workouts: [1, 4, 5], // workout ids
-                schedule: ['Monday', 'Wednesday', 'Friday'],
+                description: 'Perfect for those just starting their fitness journey. Progressive intensity over 4 weeks.',
+
+                // NEW: Workout template structure
+                workoutTemplate: {
+                    category: 'mixed',
+                    exercisePool: allExerciseIds.slice(0, 15), // Use first 15 exercises
+                    structure: {
+                        warmup: 2,
+                        main: 4,
+                        cooldown: 2
+                    }
+                },
+
+                // NEW: Progressive configuration
+                progression: {
+                    startingDuration: 15,
+                    endingDuration: 30,
+                    startingSets: 2,
+                    endingSets: 4,
+                    startingReps: 8,
+                    endingReps: 15,
+                    progressionType: 'linear'
+                },
+
+                // NEW: Schedule structure
+                schedule: {
+                    daysPerWeek: 3,
+                    totalWeeks: 4
+                },
+
+                // Keep old fields for backward compatibility
+                exercisePool: allExerciseIds.slice(0, 15),
+                structure: { warmup: 2, main: 4, cooldown: 2 },
+
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -111,12 +148,113 @@ export const seedDatabase = async () => {
                 name: 'Advanced HIIT Challenge',
                 difficulty: 'advanced',
                 duration: 21,
-                description: 'High-intensity interval training for experienced athletes',
-                workouts: [2, 3, 6],
-                schedule: ['Tuesday', 'Thursday', 'Saturday'],
+                description: 'High-intensity interval training for experienced athletes. Exponential difficulty increase.',
+
+                workoutTemplate: {
+                    category: 'cardio',
+                    exercisePool: cardioExerciseIds.length > 0 ? cardioExerciseIds : allExerciseIds.slice(0, 12),
+                    structure: {
+                        warmup: 1,
+                        main: 6,
+                        cooldown: 1
+                    }
+                },
+
+                progression: {
+                    startingDuration: 20,
+                    endingDuration: 45,
+                    startingSets: 3,
+                    endingSets: 5,
+                    startingReps: 12,
+                    endingReps: 25,
+                    progressionType: 'exponential'
+                },
+
+                schedule: {
+                    daysPerWeek: 3,
+                    totalWeeks: 3
+                },
+
+                exercisePool: cardioExerciseIds.length > 0 ? cardioExerciseIds : allExerciseIds.slice(0, 12),
+                structure: { warmup: 1, main: 6, cooldown: 1 },
+
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
+            {
+                name: 'Strength Builder',
+                difficulty: 'intermediate',
+                duration: 35,
+                description: 'Build muscle and strength progressively over 5 weeks.',
+
+                workoutTemplate: {
+                    category: 'strength',
+                    exercisePool: strengthExerciseIds.length > 0 ? strengthExerciseIds : allExerciseIds,
+                    structure: {
+                        warmup: 2,
+                        main: 5,
+                        cooldown: 1
+                    }
+                },
+
+                progression: {
+                    startingDuration: 25,
+                    endingDuration: 50,
+                    startingSets: 3,
+                    endingSets: 5,
+                    startingReps: 10,
+                    endingReps: 20,
+                    progressionType: 'stepped'
+                },
+
+                schedule: {
+                    daysPerWeek: 4,
+                    totalWeeks: 5
+                },
+
+                exercisePool: strengthExerciseIds.length > 0 ? strengthExerciseIds : allExerciseIds,
+                structure: { warmup: 2, main: 5, cooldown: 1 },
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: 'Flexibility & Mobility',
+                difficulty: 'beginner',
+                duration: 14,
+                description: 'Improve flexibility and range of motion with gentle progression.',
+
+                workoutTemplate: {
+                    category: 'flexibility',
+                    exercisePool: flexibilityExerciseIds.length > 0 ? flexibilityExerciseIds : allExerciseIds.slice(0, 10),
+                    structure: {
+                        warmup: 1,
+                        main: 5,
+                        cooldown: 2
+                    }
+                },
+
+                progression: {
+                    startingDuration: 10,
+                    endingDuration: 25,
+                    startingSets: 1,
+                    endingSets: 3,
+                    startingReps: 5,
+                    endingReps: 12,
+                    progressionType: 'logarithmic'
+                },
+
+                schedule: {
+                    daysPerWeek: 5,
+                    totalWeeks: 2
+                },
+
+                exercisePool: flexibilityExerciseIds.length > 0 ? flexibilityExerciseIds : allExerciseIds.slice(0, 10),
+                structure: { warmup: 1, main: 5, cooldown: 2 },
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            }
         ];
 
         await db.programs.bulkAdd(programs);

@@ -19,6 +19,7 @@ import SingUp from './pages/auth/SingUp.vue';
 // Workouts
 import WorkoutDetails from './pages/WorkoutDetails.vue';
 import WorkoutTimer from './pages/WorkoutTimer.vue';
+import PlanDetails from './pages/PlanDetails.vue';
 
 const routes = [
     {
@@ -29,6 +30,7 @@ const routes = [
             { path: "", name: "workouts", component: Workouts },
             { path: "workouts/:id/details", name: "workout-details", component: WorkoutDetails },
             { path: "workouts/:id/timer", name: "workout-timer", component: WorkoutTimer },
+            { path: "plans/:id/details", name: "plan-details", component: PlanDetails },
             { path: "classic", name: "classic", component: Classic },
             { path: "preferences", name: "preferences", component: Preferences },
             { path: "profile", name: "profile", component: Profile },
