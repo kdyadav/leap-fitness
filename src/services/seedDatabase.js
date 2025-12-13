@@ -91,25 +91,44 @@ export const seedDatabase = async () => {
 
         // Create workout-exercise relations
         const workoutExerciseRelations = [];
-        const exerciseNameToIdMap = new Map();
+        const exerciseIdToDbIdMap = new Map();
 
-        // Get all exercises to map names to IDs
+        // Get all exercises to map exercise library IDs to database IDs
         const allExercises = await db.exercises.toArray();
-        allExercises.forEach(ex => exerciseNameToIdMap.set(ex.name, ex.id));
+        
+        // Create a map from exercise library data to DB IDs
+        Object.values(exerciseLibrary).forEach(categoryExercises => {
+            categoryExercises.forEach(libExercise => {
+                const dbExercise = allExercises.find(ex => ex.name === libExercise.name);
+                if (dbExercise) {
+                    exerciseIdToDbIdMap.set(libExercise.id, dbExercise.id);
+                }
+            });
+        });
 
         Object.values(workoutsData).forEach((workout, workoutIndex) => {
             const workoutId = workoutIndex + 1; // IDs start from 1
-            workout.exercises.forEach((exercise, exerciseOrder) => {
-                const exerciseId = exerciseNameToIdMap.get(exercise.name);
-                if (exerciseId) {
-                    workoutExerciseRelations.push({
-                        workoutId,
-                        exerciseId,
-                        order: exerciseOrder,
-                        sets: exercise.sets || 1,
-                        reps: exercise.reps || null,
-                        duration: exercise.duration || null,
-                    });
+            
+            // workout.exercises is now an array of exercise IDs from exerciseLibrary
+            workout.exercises.forEach((exerciseLibId, exerciseOrder) => {
+                const dbExerciseId = exerciseIdToDbIdMap.get(exerciseLibId);
+                
+                if (dbExerciseId) {
+                    // Get the exercise from library to get sets, reps, duration
+                    const libExercise = Object.values(exerciseLibrary)
+                        .flat()
+                        .find(ex => ex.id === exerciseLibId);
+                    
+                    if (libExercise) {
+                        workoutExerciseRelations.push({
+                            workoutId,
+                            exerciseId: dbExerciseId,
+                            order: exerciseOrder,
+                            sets: libExercise.sets || 1,
+                            reps: libExercise.reps || null,
+                            duration: libExercise.duration || null,
+                        });
+                    }
                 }
             });
         });

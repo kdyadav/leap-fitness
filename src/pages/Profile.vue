@@ -1,43 +1,144 @@
 <template>
-    <div class="profile-page">
-        <div class="profile-container">
-            <div class="profile-header">
-                <div class="avatar">
-                    <span>{{ userInitials }}</span>
-                </div>
-                <h1>{{ user?.name || 'User' }}</h1>
-                <p class="username">@{{ user?.username || 'user' }}</p>
+    <div class="min-h-screen pb-20" style="background-color: var(--bg-primary);">
+        <div class="max-w-2xl mx-auto relative">
+            <!-- Cover Background -->
+            <div class="h-45 relative overflow-hidden rounded-b-3xl">
+                <div class="cover-gradient w-full h-full"></div>
             </div>
 
-            <div class="profile-info">
-                <div class="info-card">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ user?.email || 'N/A' }}</div>
+            <!-- Profile Header -->
+            <div class="text-center -mt-15 px-6 mb-8">
+                <div class="relative inline-block mb-4">
+                    <div class="avatar w-30 h-30 rounded-full flex items-center justify-center shadow-xl border-5 relative z-2"
+                        style="border-color: var(--bg-primary);">
+                        <span class="text-5xl font-bold text-white uppercase">{{ userInitials }}</span>
+                    </div>
+                    <div class="avatar-ring absolute -top-2 -left-2 -right-2 -bottom-2 rounded-full border-3 opacity-30"
+                        style="border-color: var(--accent-color);"></div>
                 </div>
+                <h1 class="text-3xl font-bold mb-1" style="color: var(--text-primary);">{{ user?.name || 'User' }}</h1>
+                <p class="text-lg font-medium mb-2" style="color: var(--accent-color);">@{{ user?.username || 'user' }}
+                </p>
+                <p class="text-sm" style="color: var(--text-secondary);">Member since {{ formatDate(user?.createdAt) }}
+                </p>
+            </div>
 
-                <div class="info-card" v-if="user?.age">
-                    <div class="info-label">Age</div>
-                    <div class="info-value">{{ user.age }} years</div>
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-4 px-6 mb-8">
+                <div v-if="user?.age"
+                    class="flex flex-col items-center gap-2 p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                    style="background-color: var(--card-bg); border-color: var(--border-color);">
+                    <div class="text-3xl">🎂</div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold leading-none" style="color: var(--text-primary);">{{ user.age }}
+                        </div>
+                        <div class="text-xs uppercase tracking-wider mt-1" style="color: var(--text-secondary);">Years
+                        </div>
+                    </div>
                 </div>
-
-                <div class="info-card" v-if="user?.weight">
-                    <div class="info-label">Weight</div>
-                    <div class="info-value">{{ user.weight }} kg</div>
+                <div v-if="user?.weight"
+                    class="flex flex-col items-center gap-2 p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                    style="background-color: var(--card-bg); border-color: var(--border-color);">
+                    <div class="text-3xl">⚖️</div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold leading-none" style="color: var(--text-primary);">{{
+                            user.weight }}</div>
+                        <div class="text-xs uppercase tracking-wider mt-1" style="color: var(--text-secondary);">kg
+                        </div>
+                    </div>
                 </div>
-
-                <div class="info-card" v-if="user?.height">
-                    <div class="info-label">Height</div>
-                    <div class="info-value">{{ user.height }} cm</div>
-                </div>
-
-                <div class="info-card">
-                    <div class="info-label">Member Since</div>
-                    <div class="info-value">{{ formatDate(user?.createdAt) }}</div>
+                <div v-if="user?.height"
+                    class="flex flex-col items-center gap-2 p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                    style="background-color: var(--card-bg); border-color: var(--border-color);">
+                    <div class="text-3xl">📏</div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold leading-none" style="color: var(--text-primary);">{{
+                            user.height }}</div>
+                        <div class="text-xs uppercase tracking-wider mt-1" style="color: var(--text-secondary);">cm
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="profile-actions">
-                <button @click="handleLogout" class="logout-btn">
+            <!-- Profile Details -->
+            <div class="px-6 mb-8">
+                <h2 class="text-xl font-bold mb-4 pl-2" style="color: var(--text-primary);">Personal Information</h2>
+
+                <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 hover:translate-x-1 hover:shadow-md"
+                        style="background-color: var(--card-bg); border-color: var(--border-color);">
+                        <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 info-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                </path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs uppercase tracking-wider font-semibold mb-1"
+                                style="color: var(--text-secondary);">Email Address</div>
+                            <div class="text-base font-medium" style="color: var(--text-primary);">{{ user?.email ||
+                                'N/A' }}</div>
+                        </div>
+                    </div>
+
+                    <div v-if="user?.age"
+                        class="flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 hover:translate-x-1 hover:shadow-md"
+                        style="background-color: var(--card-bg); border-color: var(--border-color);">
+                        <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 info-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="white" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-xs uppercase tracking-wider font-semibold mb-1"
+                                style="color: var(--text-secondary);">Age</div>
+                            <div class="text-base font-medium" style="color: var(--text-primary);">{{ user.age }} years
+                                old</div>
+                        </div>
+                    </div>
+
+                    <div v-if="user?.weight"
+                        class="flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 hover:translate-x-1 hover:shadow-md"
+                        style="background-color: var(--card-bg); border-color: var(--border-color);">
+                        <div
+                            class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl info-icon">
+                            ⚖️</div>
+                        <div class="flex-1">
+                            <div class="text-xs uppercase tracking-wider font-semibold mb-1"
+                                style="color: var(--text-secondary);">Weight</div>
+                            <div class="text-base font-medium" style="color: var(--text-primary);">{{ user.weight }} kg
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="user?.height"
+                        class="flex items-center gap-4 p-5 rounded-2xl border transition-all duration-300 hover:translate-x-1 hover:shadow-md"
+                        style="background-color: var(--card-bg); border-color: var(--border-color);">
+                        <div
+                            class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl info-icon">
+                            📏</div>
+                        <div class="flex-1">
+                            <div class="text-xs uppercase tracking-wider font-semibold mb-1"
+                                style="color: var(--text-secondary);">Height</div>
+                            <div class="text-base font-medium" style="color: var(--text-primary);">{{ user.height }} cm
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="px-6">
+                <button @click="handleLogout"
+                    class="w-full flex items-center justify-center gap-3 p-5 bg-transparent border-2 border-red-500 text-red-500 rounded-2xl text-lg font-bold cursor-pointer transition-all duration-300 hover:bg-red-500 hover:text-white hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -52,30 +153,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore, useWorkoutLogStore, useUserWorkoutStore, useWorkoutStore } from '@/stores';
+import { useAuthStore } from '@/stores';
 
 const router = useRouter();
 const authStore = useAuthStore();
-const workoutLogStore = useWorkoutLogStore();
-const userWorkoutStore = useUserWorkoutStore();
-const workoutStore = useWorkoutStore();
 
 const user = computed(() => authStore.currentUser);
-const workoutLogs = computed(() => workoutLogStore.workoutLogs);
-const workoutStats = computed(() => workoutLogStore.workoutStats);
-const logsLoading = computed(() => workoutLogStore.logsLoading);
-const incompleteWorkouts = computed(() => userWorkoutStore.incompleteWorkouts);
-
-const recentWorkoutLogs = computed(() => {
-    return workoutLogs.value.slice(0, 10); // Show last 10 workouts
-});
-
-const getWorkoutName = (workoutId) => {
-    const workout = workoutStore.workouts.find(w => w.id === workoutId);
-    return workout?.name || 'Workout';
-};
 
 const userInitials = computed(() => {
     if (!user.value?.name) return 'U';
@@ -90,262 +175,74 @@ const formatDate = (date) => {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        month: 'long'
     });
-};
-
-const formatLogDate = (date) => {
-    if (!date) return 'N/A';
-    const logDate = new Date(date);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    // Check if it's today
-    if (logDate.toDateString() === today.toDateString()) {
-        return 'Today';
-    }
-    // Check if it's yesterday
-    if (logDate.toDateString() === yesterday.toDateString()) {
-        return 'Yesterday';
-    }
-    // Otherwise show the date
-    return logDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: logDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-    });
-};
-
-const resumeWorkout = (workoutId, sessionId) => {
-    router.push({
-        name: 'workout-timer',
-        params: { id: workoutId },
-        query: { resume: 'true', sessionId: sessionId }
-    });
-};
-
-const deleteIncompleteWorkout = async (sessionId) => {
-    if (confirm('Are you sure you want to delete this incomplete workout?')) {
-        try {
-            await userWorkoutStore.deleteUserWorkoutSession(sessionId);
-        } catch (error) {
-            console.error('Failed to delete incomplete workout:', error);
-        }
-    }
 };
 
 const handleLogout = async () => {
     await authStore.logout();
     router.push('/auth/login');
 };
+</script>
 
-onMounted(async () => {
-    <script setup>
-        import {computed} from 'vue';
-        import {useRouter} from 'vue-router';
-        import {useAuthStore} from '@/stores';
-
-        const router = useRouter();
-        const authStore = useAuthStore();
-
-const user = computed(() => authStore.currentUser);
-
-const userInitials = computed(() => {
-            border - radius: 50%;
-        background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+<style scoped>
+.cover-gradient {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 50%, #8b5cf6 100%);
+    position: relative;
 }
 
-        .avatar span {
-            font - size: 2.5rem;
-        font-weight: 700;
-        color: white;
-        text-transform: uppercase;
+.cover-gradient::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: slidePattern 20s linear infinite;
 }
 
-        .profile-header h1 {
-            font - size: 2rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 0.5rem;
+@keyframes slidePattern {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(30px, 30px);
+    }
 }
 
-        .username {
-            color: var(--text-secondary);
-        font-size: 1.1rem;
+.avatar {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
 }
 
-        .profile-info {
-            display: grid;
-    });
-};
-
-const handleLogout = async () => {
-        }
-
-        .logout-btn:hover {
-            background: #ef4444;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+.avatar-ring {
+    animation: pulse 2s ease-in-out infinite;
 }
 
-        .logout-btn svg {
-            width: 20px;
-        height: 20px;
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.5;
+    }
 }
 
-        /* Workout Stats Section */
-        .stats-section {
-            margin - bottom: 2rem;
+.info-icon {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
 }
 
-        .section-title {
-            font - size: 1.5rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 1rem;
-}
-
-        .stats-grid {
-            display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-}
-
-        .stat-card {
-            background: var(--card-bg);
-        padding: 1.5rem;
-        border-radius: 1rem;
-        border: 1px solid var(--border-color);
-        text-align: center;
-        transition: transform 0.2s, box-shadow 0.2s;
-}
-const handleLogout = async () => {
-            await authStore.logout();
-        router.push('/auth/login');
-};
-</script>ue {
-font-size: 1.75rem;
-font-weight: 700;
-color: var(--accent-color);
-margin-bottom: 0.25rem;
-}
-
-.stat-label {
-font-size: 0.85rem;
-color: var(--text-secondary);
-}
-
-/* Workout History Section */
-.workout-history {
-margin-bottom: 2rem;
-}
-
-.loading {
-text-align: center;
-padding: 2rem;
-color: var(--text-secondary);
-}
-
-.empty-state {
-text-align: center;
-padding: 3rem 1rem;
-color: var(--text-secondary);
-}
-
-.empty-icon {
-font-size: 3rem;
-margin-bottom: 1rem;
-}
-
-.empty-subtitle {
-font-size: 0.9rem;
-margin-top: 0.5rem;
-}
-
-.workout-log-list {
-display: flex;
-flex-direction: column;
-gap: 0.75rem;
-}
-
-.workout-log-item {
-background: var(--card-bg);
-padding: 1rem;
-border-radius: 0.75rem;
-border: 1px solid var(--border-color);
-display: flex;
-justify-content: space-between;
-align-items: center;
-transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.workout-log-item:hover {
-transform: translateX(4px);
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.log-info {
-flex: 1;
-}
-
-.log-title {
-font-size: 1rem;
-font-weight: 600;
-color: var(--text-primary);
-margin-bottom: 0.5rem;
-}
-
-.log-meta {
-display: flex;
-gap: 0.75rem;
-align-items: center;
-}
-
-.log-badge {
-padding: 0.25rem 0.75rem;
-border-radius: 1rem;
-font-size: 0.75rem;
-font-weight: 600;
-text-transform: capitalize;
-}
-
-.badge-beginner {
-background: #dbeafe;
-color: #1e40af;
-}
-
-.badge-intermediate {
-background: #fef3c7;
-color: #b45309;
-}
-
-.badge-advanced {
-background: #fee2e2;
-color: #b91c1c;
-}
-
-.badge-incomplete {
-background: #fef3c7;
-color: #b45309;
-}
-
-.incomplete-section {
-border-left: 3px solid #f59e0b;
-padding-left: 1rem;
-margin-bottom: 2rem;
-}
-
-.incomplete-item {
-border-color: #fbbf24;
-width: 20px;
-height: 20px;
+@media (max-width: 480px) {
+    .grid-cols-3 {
+        grid-template-columns: 1fr !important;
+    }
 }
 </style>

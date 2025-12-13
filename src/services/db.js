@@ -201,9 +201,18 @@ export const workoutService = {
         const workoutsWithExercises = await Promise.all(
             workouts.map(async (workout) => {
                 const exercises = await workoutExerciseService.getWorkoutExercises(workout.id);
+                
+                // Aggregate unique equipment needed
+                const equipment = [...new Set(
+                    exercises
+                        .map(ex => ex.equipment)
+                        .filter(eq => eq && eq !== 'None')
+                )];
+                
                 return {
                     ...workout,
-                    exercises
+                    exercises,
+                    equipment
                 };
             })
         );
@@ -218,9 +227,17 @@ export const workoutService = {
         // Fetch exercises via workoutExercises junction table
         const exercises = await workoutExerciseService.getWorkoutExercises(workoutId);
 
+        // Aggregate unique equipment needed
+        const equipment = [...new Set(
+            exercises
+                .map(ex => ex.equipment)
+                .filter(eq => eq && eq !== 'None')
+        )];
+
         return {
             ...workout,
-            exercises
+            exercises,
+            equipment
         };
     },
 
