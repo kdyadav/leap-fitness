@@ -10,12 +10,20 @@
                 <span class="text-xs font-medium">Workouts</span>
             </router-link>
 
-            <!-- Classic -->
-            <router-link :to="{ name: 'classic' }"
+            <!-- Plans -->
+            <router-link :to="{ name: 'plans' }"
                 class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300"
-                :style="{ color: route.name === 'classic' ? 'var(--accent-color)' : 'var(--text-tertiary)' }">
+                :style="{ color: route.name === 'plans' ? 'var(--accent-color)' : 'var(--text-tertiary)' }">
+                <IconCalendar />
+                <span class="text-xs font-medium">Plans</span>
+            </router-link>
+
+            <!-- History -->
+            <router-link :to="{ name: 'history' }"
+                class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors duration-300"
+                :style="{ color: route.name === 'history' ? 'var(--accent-color)' : 'var(--text-tertiary)' }">
                 <IconStar />
-                <span class="text-xs font-medium">Classic</span>
+                <span class="text-xs font-medium">History</span>
             </router-link>
 
             <!-- Preferences -->
@@ -39,7 +47,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { IconBarbellOff, IconStar, IconSettings, IconUser } from '@tabler/icons-vue'
+import { IconBarbellOff, IconCalendar, IconStar, IconSettings, IconUser } from '@tabler/icons-vue'
 
 import { useRoute } from 'vue-router';
 

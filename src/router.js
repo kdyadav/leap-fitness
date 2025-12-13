@@ -7,9 +7,10 @@ import AuthLayout from './layout/Auth.Layout.vue';
 import AdminLayout from './layout/AdminLayout.vue';
 
 // Pages
-import Classic from './pages/Classic.vue';
+import History from './pages/History.vue';
 import Preferences from './pages/Preferences.vue';
 import Workouts from './pages/Workouts.vue';
+import Plans from './pages/Plans.vue';
 import Profile from './pages/Profile.vue';
 
 // Auth
@@ -28,10 +29,11 @@ const routes = [
         meta: { requiresAuth: true },
         children: [
             { path: "", name: "workouts", component: Workouts },
+            { path: "plans", name: "plans", component: Plans },
             { path: "workouts/:id/details", name: "workout-details", component: WorkoutDetails },
             { path: "workouts/:id/timer", name: "workout-timer", component: WorkoutTimer },
             { path: "plans/:id/details", name: "plan-details", component: PlanDetails },
-            { path: "classic", name: "classic", component: Classic },
+            { path: "history", name: "history", component: History },
             { path: "preferences", name: "preferences", component: Preferences },
             { path: "profile", name: "profile", component: Profile },
         ]

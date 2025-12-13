@@ -16,6 +16,17 @@ onMounted(() => {
     console.log('beforeinstallprompt event fired');
     e.preventDefault();
     deferredPrompt = e;
+
+    // Check if user dismissed the prompt in the last 24 hours
+    const dismissedTime = localStorage.getItem('installPromptDismissed');
+    if (dismissedTime) {
+      const hoursSinceDismissed = (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60);
+      if (hoursSinceDismissed < 24) {
+        console.log('Install prompt dismissed recently, not showing');
+        return;
+      }
+    }
+
     showInstallPrompt.value = true;
   });
 
@@ -24,6 +35,8 @@ onMounted(() => {
     console.log('PWA was installed');
     showInstallPrompt.value = false;
     deferredPrompt = null;
+    // Clear the dismissed timestamp when installed
+    localStorage.removeItem('installPromptDismissed');
   });
 });
 
@@ -43,6 +56,8 @@ const installApp = async () => {
 
 const dismissPrompt = () => {
   showInstallPrompt.value = false;
+  // Store the current timestamp when user clicks "Not now"
+  localStorage.setItem('installPromptDismissed', Date.now().toString());
 };
 
 

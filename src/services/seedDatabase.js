@@ -1,6 +1,6 @@
 // Seed the database with initial data
 import db, { userService } from './db';
-import { workoutsData } from '../data/workouts';
+import { workoutsData, exerciseLibrary } from '../data/workouts';
 
 export const seedDatabase = async () => {
     try {
@@ -35,18 +35,39 @@ export const seedDatabase = async () => {
             duration: workout.duration,
             calories: workout.calories,
             icon: workout.icon,
-            difficulty: workout.duration < 20 ? 'beginner' : workout.duration < 35 ? 'intermediate' : 'advanced',
-            category: getCategoryFromName(workout.name),
+            difficulty: workout.difficulty || (workout.duration < 20 ? 'beginner' : workout.duration < 35 ? 'intermediate' : 'advanced'),
+            category: workout.category || getCategoryFromName(workout.name),
+            targetArea: workout.targetArea || 'General',
             createdAt: new Date(),
             updatedAt: new Date(),
         }));
 
         await db.workouts.bulkAdd(workouts);
 
-        // Seed exercises from workouts
+        // Seed exercises from exercise library
         const exercises = [];
         const exerciseMap = new Map();
 
+        // Add exercises from the exercise library
+        Object.values(exerciseLibrary).forEach(categoryExercises => {
+            categoryExercises.forEach(exercise => {
+                if (!exerciseMap.has(exercise.name)) {
+                    exerciseMap.set(exercise.name, {
+                        name: exercise.name,
+                        icon: exercise.icon,
+                        duration: exercise.duration,
+                        reps: exercise.reps,
+                        sets: exercise.sets,
+                        videoUrl: exercise.videoUrl,
+                        category: exercise.category,
+                        difficulty: exercise.duration > 60 || (exercise.reps && exercise.reps > 15) ? 'advanced' : (exercise.reps > 10 || exercise.duration > 40) ? 'intermediate' : 'beginner',
+                        createdAt: new Date(),
+                    });
+                }
+            });
+        });
+
+        // Also add exercises from workouts that might not be in the library
         Object.values(workoutsData).forEach(workout => {
             workout.exercises.forEach(exercise => {
                 if (!exerciseMap.has(exercise.name)) {
@@ -57,8 +78,8 @@ export const seedDatabase = async () => {
                         reps: exercise.reps,
                         sets: exercise.sets,
                         videoUrl: exercise.videoUrl,
-                        category: getCategoryFromName(workout.name),
-                        difficulty: exercise.duration > 60 || (exercise.reps && exercise.reps > 15) ? 'advanced' : 'beginner',
+                        category: exercise.category || getCategoryFromExerciseName(exercise.name, workout.category),
+                        difficulty: exercise.duration > 60 || (exercise.reps && exercise.reps > 15) ? 'advanced' : (exercise.reps > 10 || exercise.duration > 40) ? 'intermediate' : 'beginner',
                         createdAt: new Date(),
                     });
                 }
@@ -98,8 +119,14 @@ export const seedDatabase = async () => {
         // Get all exercise IDs for exercise pools
         const allExerciseIds = allExercises.map(ex => ex.id);
         const cardioExerciseIds = allExercises.filter(ex => ex.category === 'cardio').map(ex => ex.id);
-        const strengthExerciseIds = allExercises.filter(ex => ex.category === 'strength').map(ex => ex.id);
+        const strengthExerciseIds = allExercises.filter(ex => ['chest', 'back', 'shoulders', 'arms', 'legs'].includes(ex.category)).map(ex => ex.id);
         const flexibilityExerciseIds = allExercises.filter(ex => ex.category === 'flexibility').map(ex => ex.id);
+        const coreExerciseIds = allExercises.filter(ex => ex.category === 'core').map(ex => ex.id);
+        const chestExerciseIds = allExercises.filter(ex => ex.category === 'chest').map(ex => ex.id);
+        const backExerciseIds = allExercises.filter(ex => ex.category === 'back').map(ex => ex.id);
+        const shoulderExerciseIds = allExercises.filter(ex => ex.category === 'shoulders').map(ex => ex.id);
+        const armExerciseIds = allExercises.filter(ex => ex.category === 'arms').map(ex => ex.id);
+        const legExerciseIds = allExercises.filter(ex => ex.category === 'legs').map(ex => ex.id);
 
         // Create progressive programs with new structure
         const programs = [
@@ -112,7 +139,7 @@ export const seedDatabase = async () => {
                 // NEW: Workout template structure
                 workoutTemplate: {
                     category: 'mixed',
-                    exercisePool: allExerciseIds.slice(0, 15), // Use first 15 exercises
+                    exercisePool: allExerciseIds.slice(0, 20), // Use first 20 exercises
                     structure: {
                         warmup: 2,
                         main: 4,
@@ -138,7 +165,7 @@ export const seedDatabase = async () => {
                 },
 
                 // Keep old fields for backward compatibility
-                exercisePool: allExerciseIds.slice(0, 15),
+                exercisePool: allExerciseIds.slice(0, 20),
                 structure: { warmup: 2, main: 4, cooldown: 2 },
 
                 createdAt: new Date(),
@@ -254,6 +281,154 @@ export const seedDatabase = async () => {
 
                 createdAt: new Date(),
                 updatedAt: new Date(),
+            },
+            {
+                name: 'Chest & Arms Power',
+                difficulty: 'intermediate',
+                duration: 28,
+                description: 'Focus on building upper body strength with chest and arm exercises.',
+
+                workoutTemplate: {
+                    category: 'upper-body',
+                    exercisePool: [...chestExerciseIds, ...armExerciseIds],
+                    structure: {
+                        warmup: 2,
+                        main: 5,
+                        cooldown: 1
+                    }
+                },
+
+                progression: {
+                    startingDuration: 20,
+                    endingDuration: 40,
+                    startingSets: 3,
+                    endingSets: 5,
+                    startingReps: 10,
+                    endingReps: 20,
+                    progressionType: 'linear'
+                },
+
+                schedule: {
+                    daysPerWeek: 4,
+                    totalWeeks: 4
+                },
+
+                exercisePool: [...chestExerciseIds, ...armExerciseIds],
+                structure: { warmup: 2, main: 5, cooldown: 1 },
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: 'Back & Shoulder Sculpt',
+                difficulty: 'intermediate',
+                duration: 28,
+                description: 'Develop a strong back and defined shoulders.',
+
+                workoutTemplate: {
+                    category: 'upper-body',
+                    exercisePool: [...backExerciseIds, ...shoulderExerciseIds],
+                    structure: {
+                        warmup: 2,
+                        main: 5,
+                        cooldown: 1
+                    }
+                },
+
+                progression: {
+                    startingDuration: 20,
+                    endingDuration: 40,
+                    startingSets: 3,
+                    endingSets: 5,
+                    startingReps: 8,
+                    endingReps: 18,
+                    progressionType: 'linear'
+                },
+
+                schedule: {
+                    daysPerWeek: 4,
+                    totalWeeks: 4
+                },
+
+                exercisePool: [...backExerciseIds, ...shoulderExerciseIds],
+                structure: { warmup: 2, main: 5, cooldown: 1 },
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: 'Leg & Core Crusher',
+                difficulty: 'intermediate',
+                duration: 21,
+                description: 'Build powerful legs and a rock-solid core.',
+
+                workoutTemplate: {
+                    category: 'lower-body',
+                    exercisePool: [...legExerciseIds, ...coreExerciseIds],
+                    structure: {
+                        warmup: 2,
+                        main: 6,
+                        cooldown: 1
+                    }
+                },
+
+                progression: {
+                    startingDuration: 25,
+                    endingDuration: 45,
+                    startingSets: 3,
+                    endingSets: 5,
+                    startingReps: 12,
+                    endingReps: 25,
+                    progressionType: 'stepped'
+                },
+
+                schedule: {
+                    daysPerWeek: 3,
+                    totalWeeks: 3
+                },
+
+                exercisePool: [...legExerciseIds, ...coreExerciseIds],
+                structure: { warmup: 2, main: 6, cooldown: 1 },
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                name: 'Total Body Transformation',
+                difficulty: 'advanced',
+                duration: 42,
+                description: 'Complete body transformation with balanced muscle development.',
+
+                workoutTemplate: {
+                    category: 'full-body',
+                    exercisePool: allExerciseIds,
+                    structure: {
+                        warmup: 2,
+                        main: 7,
+                        cooldown: 2
+                    }
+                },
+
+                progression: {
+                    startingDuration: 30,
+                    endingDuration: 60,
+                    startingSets: 3,
+                    endingSets: 6,
+                    startingReps: 10,
+                    endingReps: 25,
+                    progressionType: 'exponential'
+                },
+
+                schedule: {
+                    daysPerWeek: 5,
+                    totalWeeks: 6
+                },
+
+                exercisePool: allExerciseIds,
+                structure: { warmup: 2, main: 7, cooldown: 2 },
+
+                createdAt: new Date(),
+                updatedAt: new Date(),
             }
         ];
 
@@ -276,11 +451,52 @@ function getCategoryFromName(name) {
 
     if (nameLower.includes('yoga') || nameLower.includes('stretch')) {
         return 'flexibility';
-    } else if (nameLower.includes('hiit') || nameLower.includes('cardio') || nameLower.includes('running')) {
+    } else if (nameLower.includes('hiit') || nameLower.includes('cardio') || nameLower.includes('running') || nameLower.includes('inferno')) {
         return 'cardio';
-    } else if (nameLower.includes('strength') || nameLower.includes('core')) {
-        return 'strength';
+    } else if (nameLower.includes('strength') || nameLower.includes('core') || nameLower.includes('crusher')) {
+        return 'core';
+    } else if (nameLower.includes('chest')) {
+        return 'chest';
+    } else if (nameLower.includes('back')) {
+        return 'back';
+    } else if (nameLower.includes('shoulder')) {
+        return 'shoulders';
+    } else if (nameLower.includes('arm')) {
+        return 'arms';
+    } else if (nameLower.includes('leg')) {
+        return 'legs';
+    } else if (nameLower.includes('upper')) {
+        return 'upper-body';
+    } else if (nameLower.includes('lower')) {
+        return 'lower-body';
+    } else if (nameLower.includes('full') || nameLower.includes('total') || nameLower.includes('body')) {
+        return 'full-body';
     }
 
     return 'general';
+}
+
+// Helper function to determine category from exercise name
+function getCategoryFromExerciseName(exerciseName, workoutCategory) {
+    const nameLower = exerciseName.toLowerCase();
+
+    if (nameLower.includes('push') || nameLower.includes('chest') || nameLower.includes('fly')) {
+        return 'chest';
+    } else if (nameLower.includes('pull') || nameLower.includes('row') || nameLower.includes('superman')) {
+        return 'back';
+    } else if (nameLower.includes('shoulder') || nameLower.includes('pike') || nameLower.includes('raise')) {
+        return 'shoulders';
+    } else if (nameLower.includes('curl') || nameLower.includes('tricep') || nameLower.includes('bicep') || nameLower.includes('dip')) {
+        return 'arms';
+    } else if (nameLower.includes('squat') || nameLower.includes('lunge') || nameLower.includes('leg') || nameLower.includes('calf') || nameLower.includes('glute')) {
+        return 'legs';
+    } else if (nameLower.includes('plank') || nameLower.includes('crunch') || nameLower.includes('twist') || nameLower.includes('core') || nameLower.includes('v-up')) {
+        return 'core';
+    } else if (nameLower.includes('jump') || nameLower.includes('burpee') || nameLower.includes('sprint') || nameLower.includes('run') || nameLower.includes('cardio')) {
+        return 'cardio';
+    } else if (nameLower.includes('yoga') || nameLower.includes('stretch') || nameLower.includes('pose')) {
+        return 'flexibility';
+    }
+
+    return workoutCategory || 'general';
 }
