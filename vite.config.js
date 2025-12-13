@@ -11,12 +11,12 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
+      includeAssets: ['favicon.ico', 'pwa-192x192.png', 'pwa-512x512.png'],
       devOptions: {
         enabled: true,
         type: 'module',
         navigateFallback: 'index.html'
       },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Leap Fitness - Workout Tracker',
         short_name: 'Leap Fitness',
