@@ -66,12 +66,13 @@ export const seedDatabase = async () => {
             allExercisesInDB.filter(ex => ex.difficulty === difficulty);
 
         // ========== STEP 3: Create Workouts ==========
+        // Note: Durations and calories adjusted for circuit-style training (1 set per exercise)
         const workouts = [
             // BEGINNER WORKOUTS
             {
                 name: 'Beginner Full Body',
-                duration: 25,
-                calories: 220,
+                duration: 10,
+                calories: 80,
                 icon: '🌱',
                 difficulty: 'beginner',
                 category: 'full-body',
@@ -80,8 +81,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Core Basics',
-                duration: 15,
-                calories: 140,
+                duration: 6,
+                calories: 50,
                 icon: '⭐',
                 difficulty: 'beginner',
                 category: 'core',
@@ -90,8 +91,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Cardio Starter',
-                duration: 20,
-                calories: 200,
+                duration: 8,
+                calories: 70,
                 icon: '🏃',
                 difficulty: 'beginner',
                 category: 'cardio',
@@ -100,8 +101,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Morning Stretch',
-                duration: 15,
-                calories: 80,
+                duration: 6,
+                calories: 30,
                 icon: '🧘',
                 difficulty: 'beginner',
                 category: 'flexibility',
@@ -112,8 +113,8 @@ export const seedDatabase = async () => {
             // INTERMEDIATE WORKOUTS
             {
                 name: 'Chest Blast',
-                duration: 30,
-                calories: 280,
+                duration: 12,
+                calories: 100,
                 icon: '💪',
                 difficulty: 'intermediate',
                 category: 'chest',
@@ -122,8 +123,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Back Builder',
-                duration: 35,
-                calories: 300,
+                duration: 14,
+                calories: 110,
                 icon: '🏋️',
                 difficulty: 'intermediate',
                 category: 'back',
@@ -132,8 +133,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Leg Day',
-                duration: 40,
-                calories: 380,
+                duration: 15,
+                calories: 130,
                 icon: '🦵',
                 difficulty: 'intermediate',
                 category: 'legs',
@@ -142,8 +143,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Arm Sculptor',
-                duration: 28,
-                calories: 240,
+                duration: 11,
+                calories: 85,
                 icon: '💪',
                 difficulty: 'intermediate',
                 category: 'arms',
@@ -152,8 +153,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Shoulder Shredder',
-                duration: 25,
-                calories: 220,
+                duration: 10,
+                calories: 80,
                 icon: '⛰️',
                 difficulty: 'intermediate',
                 category: 'shoulders',
@@ -162,8 +163,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Core Crusher',
-                duration: 25,
-                calories: 200,
+                duration: 10,
+                calories: 75,
                 icon: '🔥',
                 difficulty: 'intermediate',
                 category: 'core',
@@ -174,8 +175,8 @@ export const seedDatabase = async () => {
             // ADVANCED WORKOUTS
             {
                 name: 'HIIT Inferno',
-                duration: 35,
-                calories: 480,
+                duration: 14,
+                calories: 170,
                 icon: '🔥',
                 difficulty: 'advanced',
                 category: 'cardio',
@@ -184,8 +185,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Advanced Athlete',
-                duration: 50,
-                calories: 520,
+                duration: 18,
+                calories: 180,
                 icon: '🏆',
                 difficulty: 'advanced',
                 category: 'full-body',
@@ -194,8 +195,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Upper Body Power',
-                duration: 40,
-                calories: 360,
+                duration: 15,
+                calories: 130,
                 icon: '💪',
                 difficulty: 'advanced',
                 category: 'upper-body',
@@ -204,8 +205,8 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Lower Body Burn',
-                duration: 45,
-                calories: 400,
+                duration: 16,
+                calories: 140,
                 icon: '🔥',
                 difficulty: 'advanced',
                 category: 'lower-body',
@@ -216,8 +217,8 @@ export const seedDatabase = async () => {
             // GENERAL FITNESS
             {
                 name: 'Total Body Blast',
-                duration: 45,
-                calories: 420,
+                duration: 16,
+                calories: 145,
                 icon: '🚀',
                 difficulty: 'intermediate',
                 category: 'full-body',
@@ -226,13 +227,135 @@ export const seedDatabase = async () => {
             },
             {
                 name: 'Quick Core',
-                duration: 12,
-                calories: 100,
+                duration: 5,
+                calories: 35,
                 icon: '⚡',
                 difficulty: 'beginner',
                 category: 'core',
                 targetArea: 'Core',
                 description: 'Quick core workout when short on time'
+            },
+
+            // EXTENDED WORKOUTS (20-30 MIN)
+            {
+                name: 'Full Body Circuit',
+                duration: 25,
+                calories: 220,
+                icon: '🔄',
+                difficulty: 'intermediate',
+                category: 'full-body',
+                targetArea: 'Full Body',
+                description: 'Complete circuit training for total body conditioning'
+            },
+            {
+                name: 'Strength & Cardio Mix',
+                duration: 28,
+                calories: 250,
+                icon: '⚡',
+                difficulty: 'intermediate',
+                category: 'full-body',
+                targetArea: 'Full Body',
+                description: 'Perfect blend of strength training and cardio'
+            },
+            {
+                name: 'Advanced Full Body',
+                duration: 30,
+                calories: 280,
+                icon: '💥',
+                difficulty: 'advanced',
+                category: 'full-body',
+                targetArea: 'Full Body',
+                description: 'High-intensity full body workout for athletes'
+            },
+            {
+                name: 'Endurance Builder',
+                duration: 25,
+                calories: 230,
+                icon: '🏃‍♂️',
+                difficulty: 'intermediate',
+                category: 'cardio',
+                targetArea: 'Cardio',
+                description: 'Build cardiovascular endurance with varied exercises'
+            },
+            {
+                name: 'Power & Strength',
+                duration: 27,
+                calories: 240,
+                icon: '🏋️‍♀️',
+                difficulty: 'advanced',
+                category: 'strength',
+                targetArea: 'Full Body',
+                description: 'Build explosive power and strength'
+            },
+            {
+                name: 'Total Core Workout',
+                duration: 22,
+                calories: 190,
+                icon: '💪',
+                difficulty: 'intermediate',
+                category: 'core',
+                targetArea: 'Core',
+                description: 'Comprehensive core training session'
+            },
+            {
+                name: 'Athletic Performance',
+                duration: 30,
+                calories: 290,
+                icon: '🏆',
+                difficulty: 'advanced',
+                category: 'full-body',
+                targetArea: 'Full Body',
+                description: 'Train like an athlete with this demanding workout'
+            },
+            {
+                name: 'Fat Burning Circuit',
+                duration: 25,
+                calories: 260,
+                icon: '🔥',
+                difficulty: 'intermediate',
+                category: 'cardio',
+                targetArea: 'Full Body',
+                description: 'Maximum calorie burn with circuit training'
+            },
+            {
+                name: 'Complete Upper Body',
+                duration: 24,
+                calories: 210,
+                icon: '💪',
+                difficulty: 'intermediate',
+                category: 'upper-body',
+                targetArea: 'Upper Body',
+                description: 'Thorough upper body workout hitting all muscle groups'
+            },
+            {
+                name: 'Complete Lower Body',
+                duration: 26,
+                calories: 240,
+                icon: '🦵',
+                difficulty: 'intermediate',
+                category: 'lower-body',
+                targetArea: 'Lower Body',
+                description: 'Comprehensive leg and glute workout'
+            },
+            {
+                name: 'Functional Fitness',
+                duration: 23,
+                calories: 200,
+                icon: '🎯',
+                difficulty: 'intermediate',
+                category: 'full-body',
+                targetArea: 'Full Body',
+                description: 'Real-world movement patterns for everyday strength'
+            },
+            {
+                name: 'Metabolic Blast',
+                duration: 28,
+                calories: 270,
+                icon: '💥',
+                difficulty: 'advanced',
+                category: 'cardio',
+                targetArea: 'Full Body',
+                description: 'Boost your metabolism with high-intensity training'
             },
         ];
 
@@ -248,6 +371,7 @@ export const seedDatabase = async () => {
         const workoutExerciseRelations = [];
 
         // Helper function to add exercises to workout
+        // Note: Sets are now 1 per exercise for circuit-style training (exercises dispersed throughout workout)
         const addExercisesToWorkout = (workoutIndex, exerciseNames) => {
             exerciseNames.forEach((name, order) => {
                 const exercise = allExercisesInDB.find(ex => ex.name === name);
@@ -256,7 +380,7 @@ export const seedDatabase = async () => {
                         workoutId: workoutIds[workoutIndex],
                         exerciseId: exercise.id,
                         order: order,
-                        sets: exercise.sets || 3,
+                        sets: exercise.sets || 1,
                         reps: exercise.reps || null,
                         duration: exercise.duration || null,
                     });
@@ -357,6 +481,90 @@ export const seedDatabase = async () => {
             'Plank', 'Bicycle Crunches', 'Leg Raises', 'Russian Twists', 'Mountain Climbers'
         ]);
 
+        // Full Body Circuit (Workout 16)
+        addExercisesToWorkout(16, [
+            'Push-ups', 'Squats', 'Pull-ups', 'Lunges', 'Plank',
+            'Shoulder Taps', 'Crunches', 'Tricep Dips', 'Glute Bridges',
+            'Mountain Climbers', 'Pike Push-ups', 'Russian Twists'
+        ]);
+
+        // Strength & Cardio Mix (Workout 17)
+        addExercisesToWorkout(17, [
+            'Burpees', 'Push-ups', 'Jump Squats', 'Diamond Push-ups', 'High Knees',
+            'Lunges', 'Mountain Climbers', 'Plank', 'Jumping Jacks',
+            'Tricep Dips', 'Bicycle Crunches', 'Box Jumps'
+        ]);
+
+        // Advanced Full Body (Workout 18)
+        addExercisesToWorkout(18, [
+            'Plyometric Push-ups', 'Pistol Squats', 'Pull-ups', 'Burpees',
+            'Handstand Hold', 'Jump Squats', 'V-ups', 'Box Jumps',
+            'Diamond Push-ups', 'Bulgarian Split Squats', 'Leg Raises', 'Sprint in Place'
+        ]);
+
+        // Endurance Builder (Workout 19)
+        addExercisesToWorkout(19, [
+            'Jumping Jacks', 'Burpees', 'High Knees', 'Mountain Climbers',
+            'Jump Rope', 'Skater Hops', 'Butt Kicks', 'Sprint in Place',
+            'Box Jumps', 'Jump Squats', 'Plank', 'Bicycle Crunches'
+        ]);
+
+        // Power & Strength (Workout 20)
+        addExercisesToWorkout(20, [
+            'Plyometric Push-ups', 'Jump Squats', 'Pull-ups', 'Box Jumps',
+            'Diamond Push-ups', 'Bulgarian Split Squats', 'Burpees', 'Pistol Squats',
+            'Pike Push-ups', 'Chest Dips', 'V-ups', 'Wide Grip Pull-ups'
+        ]);
+
+        // Total Core Workout (Workout 21)
+        addExercisesToWorkout(21, [
+            'Plank', 'Crunches', 'Bicycle Crunches', 'Russian Twists',
+            'Leg Raises', 'Mountain Climbers', 'Side Plank', 'V-ups',
+            'Dead Bug', 'Superman'
+        ]);
+
+        // Athletic Performance (Workout 22)
+        addExercisesToWorkout(22, [
+            'Burpees', 'Plyometric Push-ups', 'Box Jumps', 'Pull-ups',
+            'Jump Squats', 'Mountain Climbers', 'Pistol Squats', 'Handstand Hold',
+            'Sprint in Place', 'V-ups', 'Skater Hops', 'Wide Grip Pull-ups'
+        ]);
+
+        // Fat Burning Circuit (Workout 23)
+        addExercisesToWorkout(23, [
+            'Burpees', 'Jump Squats', 'Mountain Climbers', 'Jumping Jacks',
+            'High Knees', 'Push-ups', 'Skater Hops', 'Lunges',
+            'Bicycle Crunches', 'Sprint in Place', 'Plank', 'Butt Kicks'
+        ]);
+
+        // Complete Upper Body (Workout 24)
+        addExercisesToWorkout(24, [
+            'Push-ups', 'Pull-ups', 'Diamond Push-ups', 'Wide Push-ups',
+            'Pike Push-ups', 'Tricep Dips', 'Bicep Curls', 'Shoulder Taps',
+            'Chest Dips', 'Inverted Rows', 'Lateral Raises'
+        ]);
+
+        // Complete Lower Body (Workout 25)
+        addExercisesToWorkout(25, [
+            'Squats', 'Lunges', 'Jump Squats', 'Bulgarian Split Squats',
+            'Glute Bridges', 'Calf Raises', 'Step-ups', 'Wall Sit',
+            'Pistol Squats', 'Leg Raises'
+        ]);
+
+        // Functional Fitness (Workout 26)
+        addExercisesToWorkout(26, [
+            'Burpees', 'Squats', 'Push-ups', 'Lunges', 'Mountain Climbers',
+            'Plank', 'Step-ups', 'Shoulder Taps', 'Glute Bridges',
+            'Russian Twists', 'Jump Squats'
+        ]);
+
+        // Metabolic Blast (Workout 27)
+        addExercisesToWorkout(27, [
+            'Burpees', 'Box Jumps', 'Mountain Climbers', 'Jump Squats',
+            'High Knees', 'Plyometric Push-ups', 'Sprint in Place', 'Skater Hops',
+            'Jumping Jacks', 'Bicycle Crunches', 'V-ups', 'Butt Kicks'
+        ]);
+
         await db.workoutExercises.bulkAdd(workoutExerciseRelations);
         console.log(`✓ ${workoutExerciseRelations.length} workout-exercise relations created`);
 
@@ -390,10 +598,10 @@ export const seedDatabase = async () => {
                     }
                 },
                 progression: {
-                    startingDuration: 15,
-                    endingDuration: 30,
-                    startingSets: 2,
-                    endingSets: 4,
+                    startingDuration: 8,
+                    endingDuration: 15,
+                    startingSets: 1,
+                    endingSets: 3,
                     startingReps: 8,
                     endingReps: 15,
                     progressionType: 'linear'
@@ -422,10 +630,10 @@ export const seedDatabase = async () => {
                     }
                 },
                 progression: {
-                    startingDuration: 25,
-                    endingDuration: 50,
-                    startingSets: 3,
-                    endingSets: 5,
+                    startingDuration: 12,
+                    endingDuration: 22,
+                    startingSets: 2,
+                    endingSets: 4,
                     startingReps: 10,
                     endingReps: 20,
                     progressionType: 'stepped'
@@ -454,10 +662,10 @@ export const seedDatabase = async () => {
                     }
                 },
                 progression: {
-                    startingDuration: 20,
-                    endingDuration: 45,
-                    startingSets: 3,
-                    endingSets: 5,
+                    startingDuration: 10,
+                    endingDuration: 20,
+                    startingSets: 2,
+                    endingSets: 4,
                     startingReps: 12,
                     endingReps: 25,
                     progressionType: 'exponential'
@@ -518,10 +726,10 @@ export const seedDatabase = async () => {
                     }
                 },
                 progression: {
-                    startingDuration: 20,
-                    endingDuration: 40,
-                    startingSets: 3,
-                    endingSets: 5,
+                    startingDuration: 10,
+                    endingDuration: 18,
+                    startingSets: 2,
+                    endingSets: 4,
                     startingReps: 10,
                     endingReps: 20,
                     progressionType: 'linear'
@@ -550,10 +758,10 @@ export const seedDatabase = async () => {
                     }
                 },
                 progression: {
-                    startingDuration: 25,
-                    endingDuration: 45,
-                    startingSets: 3,
-                    endingSets: 5,
+                    startingDuration: 12,
+                    endingDuration: 20,
+                    startingSets: 2,
+                    endingSets: 4,
                     startingReps: 12,
                     endingReps: 25,
                     progressionType: 'stepped'
@@ -582,10 +790,10 @@ export const seedDatabase = async () => {
                     }
                 },
                 progression: {
-                    startingDuration: 30,
-                    endingDuration: 60,
-                    startingSets: 3,
-                    endingSets: 6,
+                    startingDuration: 15,
+                    endingDuration: 25,
+                    startingSets: 2,
+                    endingSets: 5,
                     startingReps: 10,
                     endingReps: 25,
                     progressionType: 'exponential'
@@ -614,10 +822,10 @@ export const seedDatabase = async () => {
                     }
                 },
                 progression: {
-                    startingDuration: 15,
-                    endingDuration: 35,
-                    startingSets: 2,
-                    endingSets: 4,
+                    startingDuration: 8,
+                    endingDuration: 16,
+                    startingSets: 1,
+                    endingSets: 3,
                     startingReps: 10,
                     endingReps: 25,
                     progressionType: 'linear'
