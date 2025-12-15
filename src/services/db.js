@@ -19,6 +19,7 @@ db.version(1).stores({
     goals: '++id, userId, type, target, current, status, createdAt, completedAt',
     favorites: '++id, userId, workoutId, addedAt',
     planProgress: '++id, [userId+programId], [userId+programId+dayNumber], dayNumber, completedAt', // Track completed days in a plan
+    healthMetrics: '++id, userId, date, weight, height', // Track user health metrics over time
 });
 
 // Database Services
@@ -201,14 +202,14 @@ export const workoutService = {
         const workoutsWithExercises = await Promise.all(
             workouts.map(async (workout) => {
                 const exercises = await workoutExerciseService.getWorkoutExercises(workout.id);
-                
+
                 // Aggregate unique equipment needed
                 const equipment = [...new Set(
                     exercises
                         .map(ex => ex.equipment)
                         .filter(eq => eq && eq !== 'None')
                 )];
-                
+
                 return {
                     ...workout,
                     exercises,
@@ -1083,6 +1084,276 @@ export const initializeDatabase = async () => {
         }
     } catch (error) {
         console.error('Database initialization error:', error);
+    }
+};
+
+// Health Metrics Service
+export const healthMetricsService = {
+    async addMetric(userId, metricData) {
+        try {
+            const id = await db.healthMetrics.add({
+                userId,
+                weight: metricData.weight,
+                height: metricData.height,
+                date: metricData.date || new Date(),
+                createdAt: new Date(),
+            });
+
+            // Update user's current weight and height
+            await db.users.update(userId, {
+                weight: metricData.weight,
+                height: metricData.height,
+                updatedAt: new Date(),
+            });
+
+            return await db.healthMetrics.get(id);
+        } catch (error) {
+            console.error('Error adding health metric:', error);
+            throw error;
+        }
+    },
+
+    async getUserMetrics(userId) {
+        try {
+            return await db.healthMetrics
+                .where('userId')
+                .equals(userId)
+                .sortBy('date');
+        } catch (error) {
+            console.error('Error fetching user metrics:', error);
+            throw error;
+        }
+    },
+
+    async getMetricsByDateRange(userId, startDate, endDate) {
+        try {
+            const metrics = await db.healthMetrics
+                .where('userId')
+                .equals(userId)
+                .toArray();
+
+            return metrics.filter(metric => {
+                const metricDate = new Date(metric.date);
+                return metricDate >= startDate && metricDate <= endDate;
+            }).sort((a, b) => new Date(a.date) - new Date(b.date));
+        } catch (error) {
+            console.error('Error fetching metrics by date range:', error);
+            throw error;
+        }
+    },
+
+    async getLatestMetric(userId) {
+        try {
+            const metrics = await db.healthMetrics
+                .where('userId')
+                .equals(userId)
+                .reverse()
+                .sortBy('date');
+
+            return metrics.length > 0 ? metrics[0] : null;
+        } catch (error) {
+            console.error('Error fetching latest metric:', error);
+            throw error;
+        }
+    },
+
+    async deleteMetric(metricId) {
+        try {
+            await db.healthMetrics.delete(metricId);
+            return { success: true };
+        } catch (error) {
+            console.error('Error deleting metric:', error);
+            throw error;
+        }
+    },
+
+    async getMonthlyProgress(userId, months = 6) {
+        try {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setMonth(startDate.getMonth() - months);
+
+            const metrics = await this.getMetricsByDateRange(userId, startDate, endDate);
+
+            // Group by month and get average or latest value for each month
+            const monthlyData = {};
+
+            metrics.forEach(metric => {
+                const date = new Date(metric.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = {
+                        month: monthKey,
+                        date: date,
+                        weights: [],
+                        heights: [],
+                    };
+                }
+
+                if (metric.weight) monthlyData[monthKey].weights.push(metric.weight);
+                if (metric.height) monthlyData[monthKey].heights.push(metric.height);
+            });
+
+            // Calculate averages
+            return Object.values(monthlyData)
+                .map(data => ({
+                    month: data.month,
+                    date: data.date,
+                    avgWeight: data.weights.length > 0
+                        ? data.weights.reduce((a, b) => a + b, 0) / data.weights.length
+                        : null,
+                    avgHeight: data.heights.length > 0
+                        ? data.heights.reduce((a, b) => a + b, 0) / data.heights.length
+                        : null,
+                    latestWeight: data.weights.length > 0
+                        ? data.weights[data.weights.length - 1]
+                        : null,
+                    latestHeight: data.heights.length > 0
+                        ? data.heights[data.heights.length - 1]
+                        : null,
+                }))
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+        } catch (error) {
+            console.error('Error getting monthly progress:', error);
+            throw error;
+        }
+    },
+
+    async getWeeklyProgress(userId, weeks = 12) {
+        try {
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - (weeks * 7));
+
+            const metrics = await this.getMetricsByDateRange(userId, startDate, endDate);
+
+            // Group by week
+            const weeklyData = {};
+
+            metrics.forEach(metric => {
+                const date = new Date(metric.date);
+                // Get the Monday of the week
+                const dayOfWeek = date.getDay();
+                const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                const monday = new Date(date.setDate(diff));
+                const weekKey = `${monday.getFullYear()}-W${String(Math.ceil((monday.getDate()) / 7)).padStart(2, '0')}-${String(monday.getMonth() + 1).padStart(2, '0')}`;
+
+                if (!weeklyData[weekKey]) {
+                    weeklyData[weekKey] = {
+                        week: weekKey,
+                        date: new Date(monday),
+                        weights: [],
+                        heights: [],
+                    };
+                }
+
+                if (metric.weight) weeklyData[weekKey].weights.push(metric.weight);
+                if (metric.height) weeklyData[weekKey].heights.push(metric.height);
+            });
+
+            // Calculate averages
+            return Object.values(weeklyData)
+                .map(data => ({
+                    week: data.week,
+                    date: data.date,
+                    avgWeight: data.weights.length > 0
+                        ? data.weights.reduce((a, b) => a + b, 0) / data.weights.length
+                        : null,
+                    avgHeight: data.heights.length > 0
+                        ? data.heights.reduce((a, b) => a + b, 0) / data.heights.length
+                        : null,
+                    latestWeight: data.weights.length > 0
+                        ? data.weights[data.weights.length - 1]
+                        : null,
+                    latestHeight: data.heights.length > 0
+                        ? data.heights[data.heights.length - 1]
+                        : null,
+                }))
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+        } catch (error) {
+            console.error('Error getting weekly progress:', error);
+            throw error;
+        }
+    },
+
+    // Calculate health metrics
+    calculateBMI(weight, height) {
+        // weight in kg, height in cm
+        if (!weight || !height || weight <= 0 || height <= 0) return null;
+        const heightInMeters = height / 100;
+        return parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
+    },
+
+    getBMICategory(bmi) {
+        if (!bmi) return 'Unknown';
+        if (bmi < 18.5) return 'Underweight';
+        if (bmi < 25) return 'Normal';
+        if (bmi < 30) return 'Overweight';
+        return 'Obese';
+    },
+
+    getBMICategoryColor(bmi) {
+        if (!bmi) return '#6b7280';
+        if (bmi < 18.5) return '#3b82f6'; // Blue for underweight
+        if (bmi < 25) return '#10b981'; // Green for normal
+        if (bmi < 30) return '#f59e0b'; // Orange for overweight
+        return '#ef4444'; // Red for obese
+    },
+
+    calculateIdealWeightRange(height) {
+        // Using BMI range of 18.5 to 24.9 for ideal weight
+        if (!height || height <= 0) return null;
+        const heightInMeters = height / 100;
+        const minWeight = (18.5 * heightInMeters * heightInMeters).toFixed(1);
+        const maxWeight = (24.9 * heightInMeters * heightInMeters).toFixed(1);
+        return { min: parseFloat(minWeight), max: parseFloat(maxWeight) };
+    },
+
+    calculateBodyFatPercentage(bmi, age, gender = 'male') {
+        // Deurenberg formula estimation
+        // BFP = (1.20 × BMI) + (0.23 × Age) - (10.8 × gender) - 5.4
+        // gender: 1 for male, 0 for female
+        if (!bmi || !age) return null;
+        const genderValue = gender.toLowerCase() === 'male' ? 1 : 0;
+        const bfp = (1.20 * bmi) + (0.23 * age) - (10.8 * genderValue) - 5.4;
+        return parseFloat(Math.max(0, bfp).toFixed(1));
+    },
+
+    calculateBMR(weight, height, age, gender = 'male') {
+        // Mifflin-St Jeor Equation
+        // Men: BMR = 10 × weight(kg) + 6.25 × height(cm) - 5 × age(y) + 5
+        // Women: BMR = 10 × weight(kg) + 6.25 × height(cm) - 5 × age(y) - 161
+        if (!weight || !height || !age) return null;
+        const baseBMR = (10 * weight) + (6.25 * height) - (5 * age);
+        const bmr = gender.toLowerCase() === 'male' ? baseBMR + 5 : baseBMR - 161;
+        return Math.round(bmr);
+    },
+
+    getHealthMetrics(weight, height, age, gender = 'male') {
+        const bmi = this.calculateBMI(weight, height);
+        const bmiCategory = this.getBMICategory(bmi);
+        const bmiColor = this.getBMICategoryColor(bmi);
+        const idealWeight = this.calculateIdealWeightRange(height);
+        const bodyFat = this.calculateBodyFatPercentage(bmi, age, gender);
+        const bmr = this.calculateBMR(weight, height, age, gender);
+
+        return {
+            bmi,
+            bmiCategory,
+            bmiColor,
+            idealWeight,
+            bodyFat,
+            bmr,
+            // Calculate daily calorie needs based on activity level
+            calorieNeeds: {
+                sedentary: Math.round(bmr * 1.2),
+                light: Math.round(bmr * 1.375),
+                moderate: Math.round(bmr * 1.55),
+                active: Math.round(bmr * 1.725),
+                veryActive: Math.round(bmr * 1.9)
+            }
+        };
     }
 };
 
