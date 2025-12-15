@@ -1,76 +1,93 @@
 <template>
-    <div class="history-page">
-        <div class="history-container">
-            <h1 class="page-title">Workout History</h1>
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Workout History</h1>
 
             <!-- Workout Stats Section -->
-            <div v-if="workoutStats" class="stats-section">
-                <h2 class="section-title">Your Stats</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">🏋️</div>
-                        <div class="stat-value">{{ workoutStats.totalWorkouts }}</div>
-                        <div class="stat-label">Total Workouts</div>
+            <div v-if="workoutStats" class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Your Stats</h2>
+                <div class="grid grid-cols-4 gap-2.5 sm:grid-cols-2">
+                    <div
+                        class="bg-white dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                        <div class="text-2xl mb-1.5">🏋️</div>
+                        <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-0.5">{{
+                            workoutStats.totalWorkouts }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Total Workouts</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">⏱️</div>
-                        <div class="stat-value">{{ workoutStats.totalDuration }}</div>
-                        <div class="stat-label">Minutes Trained</div>
+                    <div
+                        class="bg-white dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                        <div class="text-2xl mb-1.5">⏱️</div>
+                        <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-0.5">{{
+                            workoutStats.totalDuration }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Minutes Trained</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🔥</div>
-                        <div class="stat-value">{{ workoutStats.totalCalories }}</div>
-                        <div class="stat-label">Calories Burned</div>
+                    <div
+                        class="bg-white dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                        <div class="text-2xl mb-1.5">🔥</div>
+                        <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-0.5">{{
+                            workoutStats.totalCalories }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Calories Burned</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-value">{{ workoutStats.averageDuration }}</div>
-                        <div class="stat-label">Avg Duration (min)</div>
+                    <div
+                        class="bg-white dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 text-center transition-all hover:-translate-y-0.5 hover:shadow-lg">
+                        <div class="text-2xl mb-1.5">📊</div>
+                        <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mb-0.5">{{
+                            workoutStats.averageDuration }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Avg Duration (min)</div>
                     </div>
                 </div>
             </div>
 
             <!-- Incomplete Workouts Section -->
-            <div v-if="incompleteWorkouts.length > 0" class="incomplete-section">
-                <h2 class="section-title">Incomplete Workouts</h2>
-                <div class="workout-log-list">
+            <div v-if="incompleteWorkouts.length > 0" class="border-l-4 border-amber-500 pl-4 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Incomplete Workouts</h2>
+                <div class="flex flex-col gap-3">
                     <div v-for="workout in incompleteWorkouts" :key="workout.id"
-                        class="workout-log-item incomplete-item">
-                        <div class="log-info">
-                            <div class="log-title">{{ getWorkoutName(workout.workoutId) }}</div>
-                            <div class="log-meta">
-                                <span class="log-badge badge-incomplete">
+                        class="bg-gradient-to-r from-amber-50 to-white dark:from-amber-900/20 dark:to-gray-800 p-4 rounded-xl border border-amber-200 dark:border-amber-700 flex justify-between items-center transition-all hover:translate-x-1 hover:shadow-md">
+                        <div class="flex-1">
+                            <div class="text-base font-semibold text-gray-900 dark:text-white mb-2">{{
+                                getWorkoutName(workout.workoutId) }}</div>
+                            <div class="flex gap-3 items-center">
+                                <span
+                                    class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200">
                                     Incomplete
                                 </span>
-                                <span class="log-date">{{ formatLogDate(workout.endedAt || workout.startedAt) }}</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatLogDate(workout.endedAt
+                                    || workout.startedAt) }}</span>
                             </div>
-                            <div v-if="workout.completionPercentage" class="completion-bar">
-                                <div class="completion-fill" :style="{ width: workout.completionPercentage + '%' }">
+                            <div v-if="workout.completionPercentage"
+                                class="mt-3 bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full relative overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-300"
+                                    :style="{ width: workout.completionPercentage + '%' }">
                                 </div>
-                                <span class="completion-text">{{ Math.round(workout.completionPercentage) }}%
+                                <span
+                                    class="absolute -top-5 right-0 text-xs text-gray-500 dark:text-gray-400 font-medium">{{
+                                        Math.round(workout.completionPercentage) }}%
                                     complete</span>
                             </div>
                         </div>
-                        <div class="log-stats">
-                            <div class="log-stat">
-                                <span class="stat-icon-small">⏱️</span>
+                        <div class="flex flex-col gap-2 items-end">
+                            <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="text-base">⏱️</span>
                                 <span>{{ workout.duration || 0 }} min</span>
                             </div>
-                            <div class="log-stat">
-                                <span class="stat-icon-small">✓</span>
+                            <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="text-base">✓</span>
                                 <span>{{ workout.exercisesCompleted }}/{{ workout.totalExercises }}</span>
                             </div>
-                            <div class="action-buttons">
-                                <button @click="resumeWorkout(workout.workoutId, workout.id)" class="resume-btn"
+                            <div class="flex gap-2 mt-2">
+                                <button @click="resumeWorkout(workout.workoutId, workout.id)"
+                                    class="px-4 py-2 bg-gradient-to-br from-amber-500 to-amber-400 text-white border-0 rounded-lg text-sm font-semibold cursor-pointer flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-500/30 hover:from-amber-600 hover:to-amber-500 active:translate-y-0"
                                     title="Resume workout">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round">
                                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                                     </svg>
                                     Resume
                                 </button>
-                                <button @click="deleteIncompleteWorkout(workout.id)" class="delete-btn"
+                                <button @click="deleteIncompleteWorkout(workout.id)"
+                                    class="p-2 bg-gray-100 dark:bg-gray-700 text-red-500 border border-red-200 dark:border-red-900/50 rounded-lg text-sm font-semibold cursor-pointer flex items-center justify-center transition-all min-w-[40px] hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-500 hover:-translate-y-0.5 hover:shadow-md hover:shadow-red-500/20 active:translate-y-0"
                                     title="Delete workout">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -88,32 +105,41 @@
             </div>
 
             <!-- Completed Workouts Section -->
-            <div class="completed-section">
-                <h2 class="section-title">Completed Workouts</h2>
-                <div v-if="logsLoading" class="loading">Loading workout history...</div>
-                <div v-else-if="workoutLogs.length === 0" class="empty-state">
-                    <div class="empty-icon">📝</div>
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Completed Workouts</h2>
+                <div v-if="logsLoading" class="text-center p-8 text-gray-500 dark:text-gray-400">Loading workout
+                    history...</div>
+                <div v-else-if="workoutLogs.length === 0"
+                    class="text-center py-12 px-4 text-gray-500 dark:text-gray-400">
+                    <div class="text-5xl mb-4">📝</div>
                     <p>No workout history yet</p>
-                    <p class="empty-subtitle">Start your fitness journey today!</p>
+                    <p class="text-sm mt-2">Start your fitness journey today!</p>
                 </div>
-                <div v-else class="workout-log-list">
-                    <div v-for="log in workoutLogs" :key="log.id" class="workout-log-item">
-                        <div class="log-info">
-                            <div class="log-title">{{ log.workoutName }}</div>
-                            <div class="log-meta">
-                                <span class="log-badge" :class="'badge-' + log.workoutDifficulty?.toLowerCase()">
+                <div v-else class="flex flex-col gap-3">
+                    <div v-for="log in workoutLogs" :key="log.id"
+                        class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex justify-between items-center transition-all hover:translate-x-1 hover:shadow-md">
+                        <div class="flex-1">
+                            <div class="text-base font-semibold text-gray-900 dark:text-white mb-2">{{ log.workoutName
+                                }}</div>
+                            <div class="flex gap-3 items-center">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold capitalize" :class="{
+                                    'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200': log.workoutDifficulty?.toLowerCase() === 'beginner',
+                                    'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200': log.workoutDifficulty?.toLowerCase() === 'intermediate',
+                                    'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200': log.workoutDifficulty?.toLowerCase() === 'advanced'
+                                }">
                                     {{ log.workoutDifficulty }}
                                 </span>
-                                <span class="log-date">{{ formatLogDate(log.date) }}</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatLogDate(log.date)
+                                    }}</span>
                             </div>
                         </div>
-                        <div class="log-stats">
-                            <div class="log-stat">
-                                <span class="stat-icon-small">⏱️</span>
+                        <div class="flex flex-col gap-2 items-end">
+                            <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="text-base">⏱️</span>
                                 <span>{{ log.duration }} min</span>
                             </div>
-                            <div class="log-stat">
-                                <span class="stat-icon-small">🔥</span>
+                            <div class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                <span class="text-base">🔥</span>
                                 <span>{{ log.caloriesBurned }} cal</span>
                             </div>
                         </div>
@@ -192,301 +218,3 @@ onMounted(async () => {
     await workoutStore.loadWorkouts();
 });
 </script>
-
-<style scoped>
-.history-page {
-    background-color: var(--bg-primary);
-    min-height: 100vh;
-    padding: 1.5rem;
-}
-
-.history-container {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 1.5rem;
-}
-
-.section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-}
-
-/* Stats Section */
-.stats-section {
-    margin-bottom: 2rem;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-}
-
-.stat-card {
-    background: var(--card-bg);
-    padding: 1.5rem;
-    border-radius: 1rem;
-    border: 1px solid var(--border-color);
-    text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--accent-color);
-    margin-bottom: 0.25rem;
-}
-
-.stat-label {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-/* Incomplete Section */
-.incomplete-section {
-    border-left: 3px solid #f59e0b;
-    padding-left: 1rem;
-    margin-bottom: 2rem;
-}
-
-/* Completed Section */
-.completed-section {
-    margin-bottom: 2rem;
-}
-
-.loading {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-secondary);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-secondary);
-}
-
-.empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.empty-subtitle {
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-}
-
-.workout-log-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.workout-log-item {
-    background: var(--card-bg);
-    padding: 1rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.workout-log-item:hover {
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.incomplete-item {
-    border-color: #fbbf24;
-    background: linear-gradient(to right, #fffbeb, var(--card-bg));
-}
-
-.log-info {
-    flex: 1;
-}
-
-.log-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-}
-
-.log-meta {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-}
-
-.log-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-.badge-beginner {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.badge-intermediate {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.badge-advanced {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.badge-incomplete {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.completion-bar {
-    margin-top: 0.75rem;
-    background: #e5e7eb;
-    height: 6px;
-    border-radius: 3px;
-    position: relative;
-    overflow: hidden;
-}
-
-.completion-fill {
-    height: 100%;
-    background: linear-gradient(to right, #f59e0b, #fbbf24);
-    transition: width 0.3s ease;
-}
-
-.completion-text {
-    position: absolute;
-    top: -22px;
-    right: 0;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.log-date {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.log-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-end;
-}
-
-.log-stat {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.stat-icon-small {
-    font-size: 1rem;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.resume-btn {
-    padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #f59e0b, #fbbf24);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
-}
-
-.resume-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
-    background: linear-gradient(135deg, #d97706, #f59e0b);
-}
-
-.resume-btn:active {
-    transform: translateY(0);
-}
-
-.resume-btn svg {
-    width: 14px;
-    height: 14px;
-}
-
-.delete-btn {
-    padding: 0.5rem;
-    background: var(--bg-tertiary);
-    color: #ef4444;
-    border: 1px solid #fecaca;
-    border-radius: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    min-width: 40px;
-}
-
-.delete-btn:hover {
-    background: #fee2e2;
-    border-color: #ef4444;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
-}
-
-.delete-btn:active {
-    transform: translateY(0);
-}
-
-.delete-btn svg {
-    width: 16px;
-    height: 16px;
-}
-
-@media (max-width: 640px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
