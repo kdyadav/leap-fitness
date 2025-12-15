@@ -246,6 +246,41 @@
                 </div>
             </div>
 
+            <!-- Database Management -->
+            <div class="px-6 mb-8">
+                <div class="p-6 rounded-2xl border"
+                    style="background-color: var(--card-bg); border-color: var(--border-color);">
+                    <h2 class="text-lg font-bold mb-4" style="color: var(--text-primary);">🗄️ Database Management</h2>
+                    <div class="space-y-3">
+                        <button @click="handleResetDatabase"
+                            class="w-full flex items-center justify-center gap-3 p-4 bg-transparent border-2 border-orange-500 text-orange-500 rounded-xl text-sm font-bold cursor-pointer transition-all duration-300 hover:bg-orange-500 hover:text-white hover:-translate-y-0.5 hover:shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                            </svg>
+                            Reset Database (Keep User Data)
+                        </button>
+                        <button @click="handleClearDatabase"
+                            class="w-full flex items-center justify-center gap-3 p-4 bg-transparent border-2 border-red-600 text-red-600 rounded-xl text-sm font-bold cursor-pointer transition-all duration-300 hover:bg-red-600 hover:text-white hover:-translate-y-0.5 hover:shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                </path>
+                            </svg>
+                            Clear Entire Database
+                        </button>
+                        <p class="text-xs text-center mt-2" style="color: var(--text-secondary);">
+                            ⚠️ Warning: These actions cannot be undone
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Logout -->
             <div class="px-6 mb-8">
                 <button @click="handleLogout"
@@ -269,6 +304,8 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
 import { healthMetricsService } from '@/services/db';
 import { Line } from 'vue-chartjs';
+import { clearDatabase } from '@/utils/clearDatabase';
+import { resetDatabase } from '@/utils/resetDatabase';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -340,6 +377,69 @@ const userInitials = computed(() => {
 const handleLogout = async () => {
     await authStore.logout();
     router.push('/auth/login');
+};
+
+const handleResetDatabase = async () => {
+    const confirmed = confirm(
+        '⚠️ Reset Database?\n\n' +
+        'This will:\n' +
+        '• Clear all workouts, exercises, and programs\n' +
+        '• Reseed with fresh default data\n' +
+        '• Keep your user account and preferences\n\n' +
+        'Are you sure you want to continue?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+        const result = await resetDatabase();
+        if (result.success) {
+            alert('✅ Database reset successfully! The page will now reload.');
+            window.location.reload();
+        } else {
+            alert('❌ Error resetting database: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error resetting database:', error);
+        alert('❌ Error resetting database. Check console for details.');
+    }
+};
+
+const handleClearDatabase = async () => {
+    const confirmed = confirm(
+        '🚨 CLEAR ENTIRE DATABASE?\n\n' +
+        'This will:\n' +
+        '• Delete ALL data including your account\n' +
+        '• Remove all workouts, exercises, and programs\n' +
+        '• Clear all user data and preferences\n' +
+        '• Log you out\n\n' +
+        'This action CANNOT be undone!\n\n' +
+        'Are you absolutely sure?'
+    );
+
+    if (!confirmed) return;
+
+    const doubleConfirmed = confirm(
+        '⚠️ FINAL CONFIRMATION\n\n' +
+        'Type YES to permanently delete everything.\n\n' +
+        'Click OK to proceed or Cancel to abort.'
+    );
+
+    if (!doubleConfirmed) return;
+
+    try {
+        const success = await clearDatabase();
+        if (success) {
+            alert('✅ Database cleared successfully! The page will now reload.');
+            await authStore.logout();
+            window.location.reload();
+        } else {
+            alert('❌ Error clearing database. Check console for details.');
+        }
+    } catch (error) {
+        console.error('Error clearing database:', error);
+        alert('❌ Error clearing database. Check console for details.');
+    }
 };
 
 const handleUpdateProfile = async () => {

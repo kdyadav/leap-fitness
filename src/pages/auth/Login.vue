@@ -41,18 +41,6 @@
                 Don't have an account? <router-link to="/auth/signup"
                     class="text-indigo-600 no-underline font-semibold hover:underline">Sign up here</router-link>
             </p>
-
-            <!-- Demo Credentials -->
-            <div
-                class="mt-6 p-4 bg-[var(--bg-secondary)] rounded-lg border border-dashed border-[var(--border-color)] text-center">
-                <p class="text-[var(--text-primary)] text-sm m-1"><strong>Demo Account:</strong></p>
-                <p class="text-[var(--text-secondary)] text-sm m-1">Email: demo@fitness.com</p>
-                <p class="text-[var(--text-secondary)] text-sm m-1">Password: demo123</p>
-                <button @click="useDemoCredentials" type="button"
-                    class="mt-3 px-4 py-2 bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-md text-[var(--text-primary)] text-sm cursor-pointer transition-all duration-200 hover:bg-[var(--border-color)]">
-                    Use Demo Account
-                </button>
-            </div>
         </div>
     </div>
 </template>
@@ -82,10 +70,5 @@ const handleLogin = async () => {
     } finally {
         loading.value = false;
     }
-};
-
-const useDemoCredentials = () => {
-    email.value = 'demo@fitness.com';
-    password.value = 'demo123';
 };
 </script>
